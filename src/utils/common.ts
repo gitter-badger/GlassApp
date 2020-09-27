@@ -6,8 +6,6 @@ export function radToDeg(angle: number) {
     return angle * (180 / Math.PI);
 }
 
-export function mapIfExists<T, U>(value: null, f: (value: T) => U): null;
-export function mapIfExists<T, U>(value: undefined, f: (value: T) => U): undefined;
 export function mapIfExists<T, U>(value: T | null, f: (value: T) => U): U | null;
 export function mapIfExists<T, U>(value: T | undefined, f: (value: T) => U): U | undefined;
 export function mapIfExists<T, U>(

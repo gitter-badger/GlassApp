@@ -106,7 +106,7 @@ module.exports = (env, args) => {
                 openAnalyzer: false,
                 analyzerMode: isDevMode ? "server" : "static",
             }),
-            new EnvironmentPlugin(["GCP_API_KEY"]),
+            new EnvironmentPlugin([]),
             new CleanWebpackPlugin(),
             isDevMode && new ReactRefreshWebpackPlugin(),
             isDevMode && new webpack.HotModuleReplacementPlugin(),

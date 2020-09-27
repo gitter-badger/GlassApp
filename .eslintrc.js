@@ -25,5 +25,7 @@ module.exports = {
         ],
         "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/no-use-before-define": ["error", { functions: false, classes: false }],
+
+        "react/display-name": "off",
     },
 };

@@ -3,8 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { observer } from "mobx-react";
 import * as React from "react";
 import styled from "styled-components";
-import BoolSimDataToggle from "../components/BoolSimDataToggle";
-import SimDataInput from "../components/SimDataInput";
+import BoolSimToggle from "../components/BoolSimToggle";
+import SimEventButton from "../components/SimEventButton";
+import SimInput from "../components/SimInput";
 import { AppModel } from "../models/AppModel";
 import { flexSpacing } from "../utils/style";
 import Map from "./MapView";
@@ -12,6 +13,7 @@ import Map from "./MapView";
 export interface AppViewProps {}
 
 const app = new AppModel();
+app.startListening();
 
 const RootDiv = styled.div`
     & {
@@ -41,63 +43,79 @@ const RowsDiv = styled.div`
 export default observer((props: AppViewProps) => {
     const { sdm } = app;
 
-    React.useEffect(() => {
-        app.startListening();
-    }, []);
-
     const windDirection = sdm.getData("AMBIENT WIND DIRECTION")?.value;
 
     return (
         <RootDiv>
             <ColumnsDiv>
                 <RowsDiv>
+                    {sdm.isDataTrue("SIM ON GROUND") && (
+                        <React.Fragment>
+                            <h3>Ground</h3>
+                            <SimEventButton
+                                sdm={sdm}
+                                event="REQUEST_FUEL_KEY"
+                                label="Request Fuel"
+                            />
+                            <SimEventButton sdm={sdm} event="TOGGLE_PUSHBACK" label="Pushback" />
+                            <BoolSimToggle
+                                sdm={sdm}
+                                label="Parking Brake"
+                                dataName="BRAKE PARKING POSITION"
+                                eventName="PARKING_BRAKES"
+                            />
+                        </React.Fragment>
+                    )}
+
                     <h3>Lights</h3>
-                    <BoolSimDataToggle sdm={sdm} label="Taxi" name="LIGHT TAXI" />
-                    <BoolSimDataToggle sdm={sdm} label="Beacon" name="LIGHT BEACON" />
-                    <BoolSimDataToggle sdm={sdm} label="Navigation" name="LIGHT NAV" />
-                    <BoolSimDataToggle sdm={sdm} label="Landing" name="LIGHT LANDING" />
-                    <BoolSimDataToggle sdm={sdm} label="Strobe" name="LIGHT STROBE" />
-                    <BoolSimDataToggle sdm={sdm} label="Logo" name="LIGHT LOGO" />
-                    <BoolSimDataToggle sdm={sdm} label="Cabin" name="LIGHT CABIN" />
-                    <BoolSimDataToggle sdm={sdm} label="Panel" name="LIGHT PANEL" />
+                    <BoolSimToggle sdm={sdm} label="Taxi" dataName="LIGHT TAXI" />
+                    <BoolSimToggle sdm={sdm} label="Beacon" dataName="LIGHT BEACON" />
+                    <BoolSimToggle sdm={sdm} label="Navigation" dataName="LIGHT NAV" />
+                    <BoolSimToggle sdm={sdm} label="Landing" dataName="LIGHT LANDING" />
+                    <BoolSimToggle sdm={sdm} label="Strobe" dataName="LIGHT STROBE" />
+                    <BoolSimToggle sdm={sdm} label="Logo" dataName="LIGHT LOGO" />
+                    <BoolSimToggle sdm={sdm} label="Cabin" dataName="LIGHT CABIN" />
+                    <BoolSimToggle sdm={sdm} label="Panel" dataName="LIGHT PANEL" />
 
                     {sdm.isDataTrue("AUTOPILOT AVAILABLE") && (
                         <React.Fragment>
                             <h3>Autopilot</h3>
-                            <BoolSimDataToggle
+                            <BoolSimToggle
                                 sdm={sdm}
                                 label="Autopilot"
-                                name="AUTOPILOT MASTER"
+                                dataName="AUTOPILOT MASTER"
                             />
-                            <BoolSimDataToggle
+                            <BoolSimToggle
                                 sdm={sdm}
                                 label="Nav Lock"
-                                name="AUTOPILOT NAV1 LOCK"
+                                dataName="AUTOPILOT NAV1 LOCK"
                             />
-                            <BoolSimDataToggle
+                            <BoolSimToggle
                                 sdm={sdm}
                                 label="Heading Lock"
-                                name="AUTOPILOT HEADING LOCK"
+                                dataName="AUTOPILOT HEADING LOCK"
                             />
-                            <BoolSimDataToggle
+                            <BoolSimToggle
                                 sdm={sdm}
                                 label="Altitude Lock"
-                                name="AUTOPILOT ALTITUDE LOCK"
+                                dataName="AUTOPILOT ALTITUDE LOCK"
                             />
-                            <BoolSimDataToggle
+                            <BoolSimToggle
                                 sdm={sdm}
                                 label="Attitude Hold"
-                                name="AUTOPILOT ATTITUDE HOLD"
+                                dataName="AUTOPILOT ATTITUDE HOLD"
                             />
-                            <BoolSimDataToggle
+                            <BoolSimToggle
                                 sdm={sdm}
                                 label="Vertical Hold"
-                                name="AUTOPILOT VERTICAL HOLD"
+                                dataName="AUTOPILOT VERTICAL HOLD"
                             />
-                            <SimDataInput
+                            <SimInput
                                 sdm={sdm}
-                                label="Vertical Speed"
-                                name="AUTOPILOT VERTICAL HOLD VAR"
+                                label="Vertical Hold Speed"
+                                dataName="AUTOPILOT VERTICAL HOLD VAR"
+                                incEvent="AP_VS_VAR_INC"
+                                decEvent="AP_VS_VAR_DEC"
                             />
                         </React.Fragment>
                     )}
@@ -125,27 +143,44 @@ export default observer((props: AppViewProps) => {
                     </div>
 
                     <h3>Landing</h3>
-                    <BoolSimDataToggle sdm={sdm} label="Landing Gear" name="GEAR HANDLE POSITION" />
-                    <BoolSimDataToggle
-                        sdm={sdm}
-                        label="Parking Brake"
-                        name="BRAKE PARKING POSITION"
-                    />
+                    <BoolSimToggle sdm={sdm} label="Landing Gear" dataName="GEAR HANDLE POSITION" />
                 </RowsDiv>
                 <RowsDiv>
+                    <h3>COM</h3>
+                    {[1, 2].map(comId => (
+                        <BoolSimToggle
+                            key={comId}
+                            sdm={sdm}
+                            label={`COM TRANSMIT ${comId}`}
+                            dataName={`COM TRANSMIT:${comId}`}
+                            eventName={`COM${comId}_TRANSMIT_SELECT`}
+                        />
+                    ))}
                     <h3>NAV</h3>
-                    <BoolSimDataToggle sdm={sdm} label="COM TRANSMIT 1" name="COM TRANSMIT:1" />
-                    <BoolSimDataToggle sdm={sdm} label="COM TRANSMIT 2" name="COM TRANSMIT:2" />
-
-                    <SimDataInput sdm={sdm} label="COM ACTIVE 1" name="COM ACTIVE FREQUENCY:1" />
-                    <SimDataInput sdm={sdm} label="COM ACTIVE 2" name="COM ACTIVE FREQUENCY:2" />
-                    <SimDataInput sdm={sdm} label="COM STANDBY 1" name="COM STANDBY FREQUENCY:1" />
-                    <SimDataInput sdm={sdm} label="COM STANDBY 2" name="COM STANDBY FREQUENCY:2" />
-
-                    <SimDataInput sdm={sdm} label="NAV ACTIVE 1" name="NAV ACTIVE FREQUENCY:1" />
-                    <SimDataInput sdm={sdm} label="NAV ACTIVE 2" name="NAV ACTIVE FREQUENCY:2" />
-                    <SimDataInput sdm={sdm} label="NAV STANDBY 1" name="NAV STANDBY FREQUENCY:1" />
-                    <SimDataInput sdm={sdm} label="NAV STANDBY 2" name="NAV STANDBY FREQUENCY:2" />
+                    {[1, 2].map(navId => (
+                        <React.Fragment key={navId}>
+                            <SimEventButton
+                                sdm={sdm}
+                                label={`NAV${navId} ${
+                                    sdm
+                                        .getData(`NAV ACTIVE FREQUENCY:${navId}`)
+                                        ?.value?.toFixed(2) ?? "N/A"
+                                }MHz (SWAP)`}
+                                event={`NAV${navId}_RADIO_SWAP`}
+                            />
+                            <SimInput
+                                key={`nav${navId}`}
+                                sdm={sdm}
+                                formatter={v => v.toFixed(2)}
+                                label={`NAV${navId} Standby Freq`}
+                                dataName={`NAV STANDBY FREQUENCY:${navId}`}
+                                incEvent={`NAV${navId}_RADIO_WHOLE_INC`}
+                                minorIncEvent={`NAV${navId}_RADIO_FRACT_INC`}
+                                decEvent={`NAV${navId}_RADIO_WHOLE_DEC`}
+                                minorDecEvent={`NAV${navId}_RADIO_FRACT_DEC`}
+                            />
+                        </React.Fragment>
+                    ))}
                 </RowsDiv>
                 <Map map={app.map} />
             </ColumnsDiv>

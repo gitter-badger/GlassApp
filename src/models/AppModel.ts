@@ -1,15 +1,34 @@
 import { MapModel } from "./MapModel";
-import { SimDataModel } from "./SimDataModel";
+import { SimModel } from "./SimModel";
 
 export class AppModel {
-    sdm = new SimDataModel();
+    sdm = new SimModel();
     map = new MapModel();
 
     simInterval: number | undefined;
+    failing: boolean = false;
 
     startListening() {
         clearInterval(this.simInterval);
-        this.simInterval = setInterval(() => void this.update(), 200);
+        this.simInterval = setInterval(() => void this.updateTick(), 200);
+    }
+
+    async updateTick() {
+        try {
+            await this.update();
+
+            if (this.failing) {
+                console.log("No longer failing. Speeding up...");
+                this.failing = false;
+
+                clearInterval(this.simInterval);
+                this.simInterval = setInterval(() => void this.updateTick(), 200);
+            }
+        } catch (e) {
+            console.log("Failed to update. Slowing down...");
+            clearInterval(this.simInterval);
+            this.simInterval = setInterval(() => void this.updateTick(), 2000);
+        }
     }
 
     async update() {

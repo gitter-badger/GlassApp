@@ -1,7 +1,7 @@
 import * as React from "react";
 import { HashRouter as Router, Route, Switch } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
-import { SimDataModel } from "../models/SimDataModel";
+import { SimModel } from "../models/SimModel";
 import { useInterval } from "../utils/react";
 import AppView from "./AppView";
 

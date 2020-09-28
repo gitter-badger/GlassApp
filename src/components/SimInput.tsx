@@ -15,7 +15,7 @@ const Button = styled.button`
 `;
 
 export interface SimInputProps {
-    sdm: SimModel;
+    sim: SimModel;
     label: string;
     dataName: string;
     formatter?: (value: number) => string | number;
@@ -27,8 +27,8 @@ export interface SimInputProps {
 }
 
 export default observer((props: SimInputProps) => {
-    const { sdm, incEvent, decEvent, minorIncEvent, minorDecEvent, formatter } = props;
-    const val = sdm.getData(props.dataName)?.value;
+    const { sim, incEvent, decEvent, minorIncEvent, minorDecEvent, formatter } = props;
+    const val = sim.getData(props.dataName)?.value;
 
     const output = val != null && formatter != null ? formatter(val) : val;
 
@@ -38,10 +38,10 @@ export default observer((props: SimInputProps) => {
             <br />
             <input type="number" readOnly value={output} />
 
-            {decEvent && <Button onClick={() => sdm.sendEvent(decEvent)}>DEC</Button>}
-            {minorDecEvent && <Button onClick={() => sdm.sendEvent(minorDecEvent)}>dec</Button>}
-            {minorIncEvent && <Button onClick={() => sdm.sendEvent(minorIncEvent)}>inc</Button>}
-            {incEvent && <Button onClick={() => sdm.sendEvent(incEvent)}>INC</Button>}
+            {decEvent && <Button onClick={() => sim.sendEvent(decEvent)}>DEC</Button>}
+            {minorDecEvent && <Button onClick={() => sim.sendEvent(minorDecEvent)}>dec</Button>}
+            {minorIncEvent && <Button onClick={() => sim.sendEvent(minorIncEvent)}>inc</Button>}
+            {incEvent && <Button onClick={() => sim.sendEvent(incEvent)}>INC</Button>}
         </RootDiv>
     );
 });

@@ -19,6 +19,7 @@ import Text from "ol/style/Text";
 import pinIconUrl from "../../assets/pin.png";
 import planeIconUrl from "../../assets/plane.png";
 import { degToRad, feetToNauticalMiles, headingFromCoords } from "../utils/common";
+import { SimModel } from "./sim";
 
 export class MapModel {
     // Plane
@@ -141,13 +142,23 @@ export class MapModel {
     @observable
     placingPin: boolean = false;
 
-    constructor() {
+    constructor(sim: SimModel) {
         this.planeFeature.setStyle(this.planeIconStyle);
         this.pinFeature.setStyle(this.pinIconStyle);
         this.pinLineFeature.setStyle(this.pinLineStyle);
         this.windLineFeature.setStyle(this.windLineStyle);
 
         this.pinLayer.setVisible(this.showPin);
+
+        setInterval(() => {
+            const lat = sim.getData("PLANE LATITUDE")?.value;
+            const long = sim.getData("PLANE LONGITUDE")?.value;
+            const heading = sim.getData("PLANE HEADING DEGREES TRUE")?.value;
+
+            if (lat != null && long != null) {
+                this.updatePlanePosition(long, lat, heading ?? 0);
+            }
+        }, 500);
     }
 
     onRef = <T extends HTMLElement>(ref: T | null): void => {

@@ -6,7 +6,7 @@ import { ACTIVE_COLOR, ACTIVE_HOVER_COLOR } from "../theme";
 import ToggleButton from "./ToggleButton";
 
 export interface SimEventButtonProps {
-    sdm: SimModel;
+    sim: SimModel;
     label: string;
     event: string;
     disabled?: boolean;
@@ -25,6 +25,6 @@ const RootButton = styled.button`
 `;
 
 export default React.memo((props: SimEventButtonProps) => {
-    const { label, sdm, event } = props;
-    return <RootButton onClick={() => sdm.sendEvent(event)}>{label}</RootButton>;
+    const { label, sim, event } = props;
+    return <RootButton onClick={() => sim.sendEvent(event)}>{label}</RootButton>;
 });

@@ -4,15 +4,15 @@ import { SimModel } from "../models/sim";
 import ToggleButton from "./ToggleButton";
 
 export interface BoolSimToggleProps {
-    sdm: SimModel;
+    sim: SimModel;
     label: string;
     dataName: string;
     eventName?: string;
 }
 
 export default observer((props: BoolSimToggleProps) => {
-    const { sdm } = props;
-    const def = sdm.getData(props.dataName);
+    const { sim } = props;
+    const def = sim.getData(props.dataName);
     const defBool = (def?.value ?? 0) > 0.5;
     return (
         <ToggleButton
@@ -25,10 +25,10 @@ export default observer((props: BoolSimToggleProps) => {
 
     function onToggle() {
         if (props.eventName != null) {
-            void sdm.sendEvent(props.eventName);
+            void sim.sendEvent(props.eventName);
             return;
         }
 
-        void sdm.setData(props.dataName, defBool ? 0 : 1);
+        void sim.setData(props.dataName, defBool ? 0 : 1);
     }
 });

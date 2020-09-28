@@ -105,6 +105,7 @@ module.exports = (env, args) => {
             new BundleAnalyzerPlugin({
                 openAnalyzer: false,
                 analyzerMode: isDevMode ? "server" : "static",
+                analyzerPort: 1234,
             }),
             new EnvironmentPlugin([]),
             new CleanWebpackPlugin(),

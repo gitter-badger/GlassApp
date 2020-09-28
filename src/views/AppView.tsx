@@ -41,25 +41,25 @@ const RowsDiv = styled.div`
 `;
 
 export default observer((props: AppViewProps) => {
-    const { sdm } = app;
+    const { sim } = app;
 
-    const windDirection = sdm.getData("AMBIENT WIND DIRECTION")?.value;
+    const windDirection = sim.getData("AMBIENT WIND DIRECTION")?.value;
 
     return (
         <RootDiv>
             <ColumnsDiv>
                 <RowsDiv>
-                    {sdm.isDataTrue("SIM ON GROUND") && (
+                    {sim.isDataTrue("SIM ON GROUND") && (
                         <React.Fragment>
                             <h3>Ground</h3>
                             <SimEventButton
-                                sdm={sdm}
+                                sim={sim}
                                 event="REQUEST_FUEL_KEY"
                                 label="Request Fuel"
                             />
-                            <SimEventButton sdm={sdm} event="TOGGLE_PUSHBACK" label="Pushback" />
+                            <SimEventButton sim={sim} event="TOGGLE_PUSHBACK" label="Pushback" />
                             <BoolSimToggle
-                                sdm={sdm}
+                                sim={sim}
                                 label="Parking Brake"
                                 dataName="BRAKE PARKING POSITION"
                                 eventName="PARKING_BRAKES"
@@ -68,50 +68,50 @@ export default observer((props: AppViewProps) => {
                     )}
 
                     <h3>Lights</h3>
-                    <BoolSimToggle sdm={sdm} label="Taxi" dataName="LIGHT TAXI" />
-                    <BoolSimToggle sdm={sdm} label="Beacon" dataName="LIGHT BEACON" />
-                    <BoolSimToggle sdm={sdm} label="Navigation" dataName="LIGHT NAV" />
-                    <BoolSimToggle sdm={sdm} label="Landing" dataName="LIGHT LANDING" />
-                    <BoolSimToggle sdm={sdm} label="Strobe" dataName="LIGHT STROBE" />
-                    <BoolSimToggle sdm={sdm} label="Logo" dataName="LIGHT LOGO" />
-                    <BoolSimToggle sdm={sdm} label="Cabin" dataName="LIGHT CABIN" />
-                    <BoolSimToggle sdm={sdm} label="Panel" dataName="LIGHT PANEL" />
+                    <BoolSimToggle sim={sim} label="Taxi" dataName="LIGHT TAXI" />
+                    <BoolSimToggle sim={sim} label="Beacon" dataName="LIGHT BEACON" />
+                    <BoolSimToggle sim={sim} label="Navigation" dataName="LIGHT NAV" />
+                    <BoolSimToggle sim={sim} label="Landing" dataName="LIGHT LANDING" />
+                    <BoolSimToggle sim={sim} label="Strobe" dataName="LIGHT STROBE" />
+                    <BoolSimToggle sim={sim} label="Logo" dataName="LIGHT LOGO" />
+                    <BoolSimToggle sim={sim} label="Cabin" dataName="LIGHT CABIN" />
+                    <BoolSimToggle sim={sim} label="Panel" dataName="LIGHT PANEL" />
 
-                    {sdm.isDataTrue("AUTOPILOT AVAILABLE") && (
+                    {sim.isDataTrue("AUTOPILOT AVAILABLE") && (
                         <React.Fragment>
                             <h3>Autopilot</h3>
                             <BoolSimToggle
-                                sdm={sdm}
+                                sim={sim}
                                 label="Autopilot"
                                 dataName="AUTOPILOT MASTER"
                             />
                             <BoolSimToggle
-                                sdm={sdm}
+                                sim={sim}
                                 label="Nav Lock"
                                 dataName="AUTOPILOT NAV1 LOCK"
                             />
                             <BoolSimToggle
-                                sdm={sdm}
+                                sim={sim}
                                 label="Heading Lock"
                                 dataName="AUTOPILOT HEADING LOCK"
                             />
                             <BoolSimToggle
-                                sdm={sdm}
+                                sim={sim}
                                 label="Altitude Lock"
                                 dataName="AUTOPILOT ALTITUDE LOCK"
                             />
                             <BoolSimToggle
-                                sdm={sdm}
+                                sim={sim}
                                 label="Attitude Hold"
                                 dataName="AUTOPILOT ATTITUDE HOLD"
                             />
                             <BoolSimToggle
-                                sdm={sdm}
+                                sim={sim}
                                 label="Vertical Hold"
                                 dataName="AUTOPILOT VERTICAL HOLD"
                             />
                             <SimInput
-                                sdm={sdm}
+                                sim={sim}
                                 label="Vertical Hold Speed"
                                 dataName="AUTOPILOT VERTICAL HOLD VAR"
                                 incEvent="AP_VS_VAR_INC"
@@ -124,12 +124,12 @@ export default observer((props: AppViewProps) => {
                     <div>
                         <label title="Outside Air Temperature">OAT</label>
                         {": "}
-                        {sdm.getData("AMBIENT TEMPERATURE")?.value?.toFixed(2) ?? "N/A"}&deg;C
+                        {sim.getData("AMBIENT TEMPERATURE")?.value?.toFixed(2) ?? "N/A"}&deg;C
                     </div>
                     <div>
                         <label>Wind</label>
                         {": "}
-                        {sdm.getData("AMBIENT WIND VELOCITY")?.value?.toFixed(2) ??
+                        {sim.getData("AMBIENT WIND VELOCITY")?.value?.toFixed(2) ??
                             "N/A"} knots {windDirection?.toFixed(1) ?? "N/A"}&deg;
                         <FontAwesomeIcon
                             icon={faArrowUp}
@@ -143,14 +143,14 @@ export default observer((props: AppViewProps) => {
                     </div>
 
                     <h3>Landing</h3>
-                    <BoolSimToggle sdm={sdm} label="Landing Gear" dataName="GEAR HANDLE POSITION" />
+                    <BoolSimToggle sim={sim} label="Landing Gear" dataName="GEAR HANDLE POSITION" />
                 </RowsDiv>
                 <RowsDiv>
                     <h3>COM</h3>
                     {[1, 2].map(comId => (
                         <BoolSimToggle
                             key={comId}
-                            sdm={sdm}
+                            sim={sim}
                             label={`COM TRANSMIT ${comId}`}
                             dataName={`COM TRANSMIT:${comId}`}
                             eventName={`COM${comId}_TRANSMIT_SELECT`}
@@ -160,9 +160,9 @@ export default observer((props: AppViewProps) => {
                     {[1, 2].map(navId => (
                         <React.Fragment key={navId}>
                             <SimEventButton
-                                sdm={sdm}
+                                sim={sim}
                                 label={`NAV${navId} ${
-                                    sdm
+                                    sim
                                         .getData(`NAV ACTIVE FREQUENCY:${navId}`)
                                         ?.value?.toFixed(2) ?? "N/A"
                                 }MHz (SWAP)`}
@@ -170,7 +170,7 @@ export default observer((props: AppViewProps) => {
                             />
                             <SimInput
                                 key={`nav${navId}`}
-                                sdm={sdm}
+                                sim={sim}
                                 formatter={v => v.toFixed(2)}
                                 label={`NAV${navId} Standby Freq`}
                                 dataName={`NAV STANDBY FREQUENCY:${navId}`}

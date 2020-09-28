@@ -6,7 +6,7 @@ import styled from "styled-components";
 import BoolSimToggle from "../components/BoolSimToggle";
 import SimEventButton from "../components/SimEventButton";
 import SimInput from "../components/SimInput";
-import { AppModel } from "../models/AppModel";
+import { AppModel } from "../models/app";
 import { flexSpacing } from "../utils/style";
 import Map from "./MapView";
 

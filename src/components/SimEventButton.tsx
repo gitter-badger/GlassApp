@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import * as React from "react";
 import styled from "styled-components";
-import { SimModel } from "../models/SimModel";
+import { SimModel } from "../models/sim";
 import { ACTIVE_COLOR, ACTIVE_HOVER_COLOR } from "../theme";
 import ToggleButton from "./ToggleButton";
 

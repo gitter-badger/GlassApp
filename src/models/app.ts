@@ -1,5 +1,5 @@
-import { MapModel } from "./MapModel";
-import { SimModel } from "./SimModel";
+import { MapModel } from "./map";
+import { SimModel } from "./sim";
 
 export class AppModel {
     sdm = new SimModel();

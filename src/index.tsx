@@ -1,6 +1,8 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
 
+import "./jank";
+
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 

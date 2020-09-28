@@ -1,4 +1,4 @@
-import { MapModel } from "../models/MapModel";
+import { MapModel } from "../models/map";
 
 import * as React from "react";
 import { observer } from "mobx-react";

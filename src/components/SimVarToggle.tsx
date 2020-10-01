@@ -3,20 +3,20 @@ import * as React from "react";
 import { SimModel } from "../models/sim";
 import ToggleButton from "./ToggleButton";
 
-export interface BoolSimToggleProps {
+export interface SimVarToggleProps {
     sim: SimModel;
-    label: string;
-    dataName: string;
+    text: string;
+    varName: string;
     eventName?: string;
 }
 
-export default observer((props: BoolSimToggleProps) => {
-    const { sim } = props;
-    const def = sim.getData(props.dataName);
+export default observer((props: SimVarToggleProps) => {
+    const { sim, varName } = props;
+    const def = sim.getData(varName);
     const defBool = (def?.value ?? 0) > 0.5;
     return (
         <ToggleButton
-            text={props.label}
+            text={props.text}
             onToggle={onToggle}
             disabled={def == null}
             toggled={defBool}
@@ -29,6 +29,6 @@ export default observer((props: BoolSimToggleProps) => {
             return;
         }
 
-        void sim.setData(props.dataName, defBool ? 0 : 1);
+        void sim.setData(props.varName, defBool ? 0 : 1);
     }
 });

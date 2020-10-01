@@ -6,14 +6,19 @@ export function radToDeg(angle: number) {
     return angle * (180 / Math.PI);
 }
 
-export function mapIfExists<T, U>(value: T | null, f: (value: T) => U): U | null;
-export function mapIfExists<T, U>(value: T | undefined, f: (value: T) => U): U | undefined;
 export function mapIfExists<T, U>(
     value: T | null | undefined,
     f: (value: T) => U
 ): U | null | undefined {
     if (value == null) return value as null | undefined;
     return f(value);
+}
+
+export function mapAnyExists<T>(...funcs: Array<() => T | null | undefined>): T | null | undefined {
+    for (const func of funcs) {
+        const result = func();
+        if (result != null) return result;
+    }
 }
 
 export function headingFromCoords(start: [number, number], end: [number, number]): number {
@@ -28,4 +33,17 @@ export function headingFromCoords(start: [number, number], end: [number, number]
 }
 export function feetToNauticalMiles(value: number): number {
     return value / 6076.11549;
+}
+
+export function arrRange(start: number, end: number) {
+    const result: number[] = [];
+    for (let i = start; i < end; i++) {
+        result.push(i);
+    }
+
+    return result;
+}
+
+export function filterNil<T>(items: Array<T | null | undefined>): T[] {
+    return items.filter(item => item != null) as T[];
 }

@@ -11,6 +11,8 @@ const GlobalStyle = createGlobalStyle`
     height: 100%;
     margin: 0px;
     padding: 0px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
   }
 `;
 

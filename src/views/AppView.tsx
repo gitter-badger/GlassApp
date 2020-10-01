@@ -3,12 +3,20 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { observer } from "mobx-react";
 import * as React from "react";
 import styled from "styled-components";
-import BoolSimToggle from "../components/BoolSimToggle";
+import BoolSimToggle from "../components/SimVarToggle";
+import CollapseHeading from "../components/CollapseHeading";
+import ColumnDiv from "../components/ColumnDiv";
 import SimEventButton from "../components/SimEventButton";
 import SimInput from "../components/SimInput";
 import { AppModel } from "../models/app";
 import { flexSpacing } from "../utils/style";
+import EngineView from "./EngineView";
+import LightsView from "./LightsView";
 import Map from "./MapView";
+import SimEventTriggerView from "./SimEventTriggerView";
+import SimVarWatcherView from "./SimVarWatcherView";
+import AutopilotView from "./AutopilotView";
+import GroundView from "./GroundView";
 
 export interface AppViewProps {}
 
@@ -49,76 +57,8 @@ export default observer((props: AppViewProps) => {
         <RootDiv>
             <ColumnsDiv>
                 <RowsDiv>
-                    {sim.isDataTrue("SIM ON GROUND") && (
-                        <React.Fragment>
-                            <h3>Ground</h3>
-                            <SimEventButton
-                                sim={sim}
-                                event="REQUEST_FUEL_KEY"
-                                label="Request Fuel"
-                            />
-                            <SimEventButton sim={sim} event="TOGGLE_PUSHBACK" label="Pushback" />
-                            <BoolSimToggle
-                                sim={sim}
-                                label="Parking Brake"
-                                dataName="BRAKE PARKING POSITION"
-                                eventName="PARKING_BRAKES"
-                            />
-                        </React.Fragment>
-                    )}
-
-                    <h3>Lights</h3>
-                    <BoolSimToggle sim={sim} label="Taxi" dataName="LIGHT TAXI" />
-                    <BoolSimToggle sim={sim} label="Beacon" dataName="LIGHT BEACON" />
-                    <BoolSimToggle sim={sim} label="Navigation" dataName="LIGHT NAV" />
-                    <BoolSimToggle sim={sim} label="Landing" dataName="LIGHT LANDING" />
-                    <BoolSimToggle sim={sim} label="Strobe" dataName="LIGHT STROBE" />
-                    <BoolSimToggle sim={sim} label="Logo" dataName="LIGHT LOGO" />
-                    <BoolSimToggle sim={sim} label="Cabin" dataName="LIGHT CABIN" />
-                    <BoolSimToggle sim={sim} label="Panel" dataName="LIGHT PANEL" />
-
-                    {sim.isDataTrue("AUTOPILOT AVAILABLE") && (
-                        <React.Fragment>
-                            <h3>Autopilot</h3>
-                            <BoolSimToggle
-                                sim={sim}
-                                label="Autopilot"
-                                dataName="AUTOPILOT MASTER"
-                            />
-                            <BoolSimToggle
-                                sim={sim}
-                                label="Nav Lock"
-                                dataName="AUTOPILOT NAV1 LOCK"
-                            />
-                            <BoolSimToggle
-                                sim={sim}
-                                label="Heading Lock"
-                                dataName="AUTOPILOT HEADING LOCK"
-                            />
-                            <BoolSimToggle
-                                sim={sim}
-                                label="Altitude Lock"
-                                dataName="AUTOPILOT ALTITUDE LOCK"
-                            />
-                            <BoolSimToggle
-                                sim={sim}
-                                label="Attitude Hold"
-                                dataName="AUTOPILOT ATTITUDE HOLD"
-                            />
-                            <BoolSimToggle
-                                sim={sim}
-                                label="Vertical Hold"
-                                dataName="AUTOPILOT VERTICAL HOLD"
-                            />
-                            <SimInput
-                                sim={sim}
-                                label="Vertical Hold Speed"
-                                dataName="AUTOPILOT VERTICAL HOLD VAR"
-                                incEvent="AP_VS_VAR_INC"
-                                decEvent="AP_VS_VAR_DEC"
-                            />
-                        </React.Fragment>
-                    )}
+                    <GroundView sim={sim} />
+                    <AutopilotView sim={sim} />
 
                     <h3>External</h3>
                     <div>
@@ -143,19 +83,23 @@ export default observer((props: AppViewProps) => {
                     </div>
 
                     <h3>Landing</h3>
-                    <BoolSimToggle sim={sim} label="Landing Gear" dataName="GEAR HANDLE POSITION" />
+                    <BoolSimToggle sim={sim} text="Landing Gear" varName="GEAR HANDLE POSITION" />
                 </RowsDiv>
                 <RowsDiv>
+                    <LightsView sim={sim} />
                     <h3>COM</h3>
-                    {[1, 2].map(comId => (
-                        <BoolSimToggle
-                            key={comId}
-                            sim={sim}
-                            label={`COM TRANSMIT ${comId}`}
-                            dataName={`COM TRANSMIT:${comId}`}
-                            eventName={`COM${comId}_TRANSMIT_SELECT`}
-                        />
-                    ))}
+                    <h5>Transmit</h5>
+                    <ColumnDiv>
+                        {[1, 2].map(comId => (
+                            <BoolSimToggle
+                                key={comId}
+                                sim={sim}
+                                text={`COM ${comId}`}
+                                varName={`COM TRANSMIT:${comId}`}
+                                eventName={`COM${comId}_TRANSMIT_SELECT`}
+                            />
+                        ))}
+                    </ColumnDiv>
                     <h3>NAV</h3>
                     {[1, 2].map(navId => (
                         <React.Fragment key={navId}>
@@ -181,6 +125,14 @@ export default observer((props: AppViewProps) => {
                             />
                         </React.Fragment>
                     ))}
+                </RowsDiv>
+                <RowsDiv>
+                    <EngineView sim={sim} />
+
+                    <CollapseHeading defaultCollapsed title="Debug">
+                        <SimVarWatcherView sim={sim} />
+                        <SimEventTriggerView sim={sim} />
+                    </CollapseHeading>
                 </RowsDiv>
                 <Map map={app.map} />
             </ColumnsDiv>

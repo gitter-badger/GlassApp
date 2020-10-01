@@ -1,5 +1,4 @@
-import fetch from "isomorphic-fetch";
-import { action, observable } from "mobx";
+import { observable } from "mobx";
 
 const BASE_URL = "http://localhost:5000/";
 
@@ -11,13 +10,8 @@ export class SimModel {
     private simDataCache = new Map<string, SimData>();
     private unknownSimDataNames = new Set<string>();
 
-    getData(name: string): SimData | null {
-        const simData = this.simDataCache.get(name);
-        if (simData != null) return simData;
-
-        this.unknownSimDataNames.add(name);
-
-        return null;
+    getData(name: string): SimData | undefined {
+        return this.getCache(name);
     }
 
     isDataTrue(name: string): boolean {
@@ -27,7 +21,14 @@ export class SimModel {
         return def.value > 0.5;
     }
 
-    async setData(name: string, value: number): Promise<void> {}
+    setData(name: string, value: number) {
+        const data = this.simDataCache.get(name);
+        if (data != null) return data;
+
+        this.sendCommand({
+            setData: { [name]: value },
+        });
+    }
 
     connect() {
         console.log("Connecting  to GlassServer socket...");
@@ -65,6 +66,15 @@ export class SimModel {
         });
     }
 
+    private getCache(name: string) {
+        const data = this.simDataCache.get(name);
+        if (data != null) return data;
+
+        this.unknownSimDataNames.add(name);
+
+        return undefined;
+    }
+
     private tick() {
         this.sendCommand({ getData: true, subscribe: [...this.unknownSimDataNames] });
     }
@@ -74,6 +84,7 @@ export class SimModel {
         if (cmd.updateData != null && cmd.updateData.length > 0) {
             for (const def of cmd.updateData) {
                 this.simDataCache.set(def.name, def);
+
                 this.unknownSimDataNames.delete(def.name);
             }
         }

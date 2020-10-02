@@ -120,7 +120,7 @@ export default observer((props: AppViewProps) => {
                 <OptionsView sim={sim} />
                 <DebugView sim={sim} />
             </RowsDiv>
-            <HorizontalCollapse width={600}>
+            <HorizontalCollapse width={800}>
                 <Map map={app.map} />
             </HorizontalCollapse>
         </RootDiv>

@@ -1,5 +1,6 @@
-import { action, observable } from "mobx";
+import { action, autorun, observable } from "mobx";
 import { Feature, Map, View } from "ol";
+import { distance } from "ol/coordinate";
 import LineString from "ol/geom/LineString";
 import Point from "ol/geom/Point";
 import { defaults as defaultInteractions } from "ol/interaction";
@@ -10,16 +11,14 @@ import "ol/ol.css";
 import { fromLonLat, toLonLat } from "ol/proj";
 import OSM from "ol/source/OSM";
 import VectorSource from "ol/source/Vector";
-import Fill from "ol/style/Fill";
 import Icon from "ol/style/Icon";
 import IconAnchorUnits from "ol/style/IconAnchorUnits";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
-import Text from "ol/style/Text";
-import pinIconUrl from "../../assets/pin.png";
 import planeIconUrl from "../../assets/plane.png";
-import { degToRad, feetToNauticalMiles, headingFromCoords } from "../utils/common";
+import { arrDelete, degToRad, feetToNauticalMiles } from "../utils/common";
 import { SimModel } from "./sim";
+import ScaleLine from "ol/control/ScaleLine";
 
 export class MapModel {
     // Plane
@@ -30,12 +29,12 @@ export class MapModel {
         anchorYUnits: IconAnchorUnits.FRACTION,
         src: planeIconUrl,
     });
+    planeIconStyle = new Style({
+        image: this.planeIcon,
+    });
     planePoint = new Point([0, 0]);
     planeFeature = new Feature({
         geometry: this.planePoint,
-    });
-    planeIconStyle = new Style({
-        image: this.planeIcon,
     });
 
     planeSource = new VectorSource({
@@ -45,63 +44,25 @@ export class MapModel {
         source: this.planeSource,
     });
 
-    // Pin
-    pinIcon = new Icon({
-        anchor: [0.5, 1],
-        scale: [0.1, 0.1],
-        anchorXUnits: IconAnchorUnits.FRACTION,
-        anchorYUnits: IconAnchorUnits.FRACTION,
-        src: pinIconUrl,
-    });
-    pinIconStyle = new Style({
-        image: this.pinIcon,
-    });
-    pinPoint = new Point([0, 0]);
-    pinFeature = new Feature({
-        geometry: this.pinPoint,
-    });
+    // Waypoint points
+    waypointPointFeatures: Feature[] = [];
 
-    // Pin Line
-    pinLine = new LineString([
-        [0, 0],
-        [0, 0],
-    ]);
-    pinLineStyle = new Style({
+    // Waypoint line
+    waypointLine = new LineString([]);
+    waypointLineStyle = new Style({
         stroke: new Stroke({
             width: 2,
             color: "#ff0000",
         }),
     });
-    pinLineFeature = new Feature({
-        geometry: this.pinLine,
+    waypointLineFeature = new Feature({
+        geometry: this.waypointLine,
     });
-
-    pinSource = new VectorSource({
-        features: [this.pinFeature, this.pinLineFeature],
+    waypointSource = new VectorSource({
+        features: [this.waypointLineFeature],
     });
-    pinLayer = new VectorLayer({
-        source: this.pinSource,
-    });
-
-    // Wind Vector
-    windLine = new LineString([
-        [0, 0],
-        [0, 0],
-    ]);
-    windLineStyle = new Style({
-        stroke: new Stroke({
-            width: 2,
-            color: "#0000ff",
-        }),
-    });
-    windLineFeature = new Feature({
-        geometry: this.windLine,
-    });
-    windLineSource = new VectorSource({
-        features: [this.windLineFeature],
-    });
-    windLayer = new VectorLayer({
-        source: this.windLineSource,
+    waypointLayer = new VectorLayer({
+        source: this.waypointSource,
     });
 
     view = new View({
@@ -112,10 +73,10 @@ export class MapModel {
     interactions = defaultInteractions();
     placePinInteraction = new PointerInteraction({
         handleDownEvent: event => {
-            if (this.placingPin) {
+            if (this.addingWaypoint) {
                 const [lon, lat] = toLonLat(event.coordinate);
-                this.updatePinPosition(lon, lat);
-                this.endPlacingPin();
+                this.waypoints.push([lon, lat]);
+                this.stopAddingWaypoint();
             }
             return false;
         },
@@ -126,38 +87,57 @@ export class MapModel {
             new TileLayer({
                 source: new OSM({ imageSmoothing: true }),
             }),
-            this.pinLayer,
+            this.waypointLayer,
             this.planeLayer,
         ],
         view: this.view,
         interactions: this.interactions,
+        controls: [
+            new ScaleLine({
+                units: "nautical",
+            }),
+        ],
     });
 
     @observable
     followPlane: boolean = true;
 
     @observable
-    showPin: boolean = false;
+    showWaypoints: boolean = false;
 
     @observable
-    placingPin: boolean = false;
+    addingWaypoint: boolean = false;
+
+    @observable
+    waypoints: Array<[number, number]> = [];
+
+    @observable
+    selectedWaypoint: [number, number] | null = null;
+
+    @observable
+    planeLongitude: number = 0;
+
+    @observable
+    planeLatitude: number = 0;
+
+    @observable
+    planeHeading: number = 0;
+
+    private sim: SimModel;
 
     constructor(sim: SimModel) {
         this.planeFeature.setStyle(this.planeIconStyle);
-        this.pinFeature.setStyle(this.pinIconStyle);
-        this.pinLineFeature.setStyle(this.pinLineStyle);
-        this.windLineFeature.setStyle(this.windLineStyle);
+        this.waypointLineFeature.setStyle(this.waypointLineStyle);
 
-        this.pinLayer.setVisible(this.showPin);
+        this.sim = sim;
+
+        this.waypointLayer.setVisible(this.showWaypoints);
 
         setInterval(() => {
-            const lat = sim.getData("PLANE LATITUDE")?.value;
-            const long = sim.getData("PLANE LONGITUDE")?.value;
-            const heading = sim.getData("PLANE HEADING DEGREES TRUE")?.value;
-
-            if (lat != null && long != null) {
-                this.updatePlanePosition(long, lat, heading ?? 0);
-            }
+            this.planeLatitude = sim.getData("PLANE LATITUDE")?.value ?? this.planeLatitude;
+            this.planeLongitude = sim.getData("PLANE LONGITUDE")?.value ?? this.planeLongitude;
+            this.planeHeading =
+                sim.getData("PLANE HEADING DEGREES TRUE")?.value ?? this.planeHeading;
         }, 500);
     }
 
@@ -165,53 +145,11 @@ export class MapModel {
         this.map.setTarget(ref ?? undefined);
     };
 
-    updatePlanePosition(lon: number, lat: number, rot: number) {
-        const coords = fromLonLat([lon, lat]);
-        this.planePoint.setCoordinates(coords);
-        this.planeIcon.setRotation(degToRad(rot));
-
-        if (this.followPlane) {
-            this.view.setCenter(coords);
-        }
-
-        this.updatePinLine();
-    }
-
-    updatePinPosition(lon: number, lat: number) {
-        const pinCoords = fromLonLat([lon, lat]);
-        this.pinPoint.setCoordinates(pinCoords);
-
-        this.updatePinLine();
-    }
-
-    updatePinLine() {
-        const pinCoords = this.pinPoint.getCoordinates();
-        const planeCoords = this.planePoint.getCoordinates();
-
-        this.pinLine.setCoordinates([planeCoords, pinCoords]);
-
-        const distance = feetToNauticalMiles(this.pinLine.getLength());
-
-        const heading = headingFromCoords(
-            planeCoords as [number, number],
-            pinCoords as [number, number]
-        );
-
-        this.pinLineStyle.setText(
-            new Text({
-                backgroundFill: new Fill({ color: "#ffffff" }),
-                backgroundStroke: new Stroke({ color: "#000000" }),
-                text: `${distance.toFixed(2)} NM\n${heading.toFixed(2)}°`,
-                scale: 1.5,
-            })
-        );
-    }
-
     @action.bound
-    toggleShowPin(): void {
-        this.showPin = !this.showPin;
+    toggleWaypoints(): void {
+        this.showWaypoints = !this.showWaypoints;
 
-        this.pinLayer.setVisible(this.showPin);
+        this.waypointLayer.setVisible(this.showWaypoints);
     }
 
     @action.bound
@@ -220,15 +158,57 @@ export class MapModel {
     }
 
     @action.bound
-    startPlacingPin(): void {
-        this.placingPin = true;
+    startAddingWaypoint(): void {
+        this.addingWaypoint = true;
 
         this.interactions.push(this.placePinInteraction);
     }
 
     @action.bound
-    endPlacingPin(): void {
-        this.placingPin = false;
+    stopAddingWaypoint(): void {
+        this.addingWaypoint = false;
         this.interactions.remove(this.placePinInteraction);
     }
+
+    dc = autorun(() => {
+        const planeCoords = fromLonLat([this.planeLongitude, this.planeLatitude]);
+
+        const open = [...this.waypoints];
+        const toRemove: Array<[number, number]> = [];
+        while (open.length > 0) {
+            const nextWaypoint = open.shift();
+            if (nextWaypoint == null) break;
+
+            const lenInFt = new LineString([fromLonLat(nextWaypoint), planeCoords]).getLength();
+
+            if (lenInFt > 500) break;
+            toRemove.push(nextWaypoint);
+        }
+        toRemove.forEach(wp => arrDelete(this.waypoints, wp));
+
+        // UPDATE VIEW
+
+        // Update plane
+        this.planePoint.setCoordinates(planeCoords);
+        this.planeIcon.setRotation(degToRad(this.planeHeading));
+        if (this.followPlane) {
+            this.view.setCenter(planeCoords);
+        }
+
+        // Update waypoints
+        const waypointCoords = this.waypoints.map(w => fromLonLat(w));
+
+        // Update waypoint points
+        const oldPointFeatures = this.waypointPointFeatures;
+        this.waypointPointFeatures = waypointCoords.map(
+            coord => new Feature({ geometry: new Point(coord) })
+        );
+        for (const feat of oldPointFeatures) {
+            this.waypointSource.removeFeature(feat);
+        }
+        this.waypointSource.addFeatures(this.waypointPointFeatures);
+
+        // Update waypoint line
+        this.waypointLine.setCoordinates([planeCoords, ...waypointCoords]);
+    });
 }

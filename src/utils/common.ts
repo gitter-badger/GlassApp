@@ -61,3 +61,10 @@ export function mapRange(
 ): number {
     return ((value - fromMin) * (fromMax - fromMin)) / (toMax - toMin) + toMin;
 }
+
+export function arrDelete<T>(arr: T[], item: T): T[] {
+    const idx = arr.findIndex(arrItem => arrItem === item);
+    if (idx < 0) return arr;
+    arr.splice(idx, 1);
+    return arr;
+}

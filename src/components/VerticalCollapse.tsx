@@ -46,7 +46,12 @@ export default function (props: CollapseHeadingProps): JSX.Element {
                 <MyIcon collapsed={collapsed} icon={faChevronRight} />
                 <h3>{props.title}</h3>
             </MyHeading>
-            {!collapsed && props.children}
+            {renderChildren()}
         </React.Fragment>
     );
+
+    function renderChildren() {
+        if (collapsed) return null;
+        return props.children;
+    }
 }

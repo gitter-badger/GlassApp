@@ -1,5 +1,6 @@
-export const ACTIVE_COLOR = "#00ffff";
-export const ACTIVE_HOVER_COLOR = "#00cccc";
+export const ACTIVE_COLOR = "hsl(170, 100%, 50%)";
+export const ACTIVATABLE_COLOR = "hsl(170, 100%, 90%)";
+export const ACTIVATABLE_HOVER_COLOR = "hsl(170, 100%, 75%)";
 
-export const ENABLED_COLOR = "#00cc00";
+export const ENABLED_COLOR = "hsl(150, 100%, 50%)";
 export const DISABLED_COLOR = "#dddddd";

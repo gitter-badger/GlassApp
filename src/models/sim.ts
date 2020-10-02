@@ -1,14 +1,28 @@
-import { observable } from "mobx";
-
-const BASE_URL = "http://localhost:5000/";
+import { computed, observable } from "mobx";
+import { delayMs } from "../utils/common";
+import { Stored } from "./stored";
 
 export class SimModel {
+    @observable
     private sock?: WebSocket;
     private pollingInterval?: number;
 
     @observable
+    serverUrl = new Stored<string>({
+        initial: "ws://localhost:8888/sim",
+        key: "glass_server_url",
+        serialize: v => v,
+        deserialize: v => v,
+    });
+
+    @observable
     private simDataCache = new Map<string, SimData>();
     private unknownSimDataNames = new Set<string>();
+
+    @computed
+    get connected(): boolean {
+        return this.sock != null;
+    }
 
     getData(name: string): SimData | undefined {
         return this.getCache(name);
@@ -32,7 +46,7 @@ export class SimModel {
 
     connect() {
         console.log("Connecting  to GlassServer socket...");
-        const sock = new WebSocket("ws://localhost:8888/sim");
+        const sock = new WebSocket(this.serverUrl.get());
 
         sock.onopen = () => {
             console.log("Connected to GlassServer socket!");
@@ -58,6 +72,15 @@ export class SimModel {
                 this.connect();
             }
         };
+    }
+
+    disconnect() {
+        const sock = this.sock;
+        if (sock == null) return;
+
+        console.log("Disconnecting from Glass Server...");
+
+        sock.close();
     }
 
     sendEvent(name: string, value?: number) {

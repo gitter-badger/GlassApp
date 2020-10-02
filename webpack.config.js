@@ -100,7 +100,9 @@ module.exports = (env, args) => {
                 filename: isDevMode ? "[name].css" : "[name].[hash].css",
                 chunkFilename: isDevMode ? "[id].css" : "[id].[hash].css",
             }),
-            new HtmlWebpackPlugin({ template: "./src/index.html" }),
+            new HtmlWebpackPlugin({
+                template: "./src/index.html",
+            }),
             new ForkTsCheckerPlugin(),
             new BundleAnalyzerPlugin({
                 openAnalyzer: false,
@@ -116,6 +118,8 @@ module.exports = (env, args) => {
             ignored: /node_modules/,
         },
         devServer: {
+            contentBase: outputPath,
+            host: "0.0.0.0",
             hot: isDevMode,
         },
     };

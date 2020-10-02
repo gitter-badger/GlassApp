@@ -47,7 +47,7 @@ export default observer((props: EngineViewProps) => {
                         key={engId}
                         sim={sim}
                         text={`${engId}`}
-                        dataName={`GENERAL ENG COMBUSTION:${engId}`}
+                        varName={`GENERAL ENG COMBUSTION:${engId}`}
                     />
                 ))}
             </ColumnDiv>

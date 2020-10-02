@@ -47,3 +47,17 @@ export function arrRange(start: number, end: number) {
 export function filterNil<T>(items: Array<T | null | undefined>): T[] {
     return items.filter(item => item != null) as T[];
 }
+
+export async function delayMs(ms: number): Promise<void> {
+    return new Promise<void>(resolve => setTimeout(resolve, ms));
+}
+
+export function mapRange(
+    value: number,
+    fromMin: number,
+    fromMax: number,
+    toMin: number,
+    toMax: number
+): number {
+    return ((value - fromMin) * (fromMax - fromMin)) / (toMax - toMin) + toMin;
+}

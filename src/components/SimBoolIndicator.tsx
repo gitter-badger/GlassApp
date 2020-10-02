@@ -9,7 +9,7 @@ import { DISABLED_COLOR, ENABLED_COLOR } from "../theme";
 export interface SimBoolIndicatorProps {
     sim: SimModel;
     text: string;
-    dataName: string;
+    varName: string;
     threshold?: number;
 }
 
@@ -21,7 +21,7 @@ const RootDiv = styled.div`
 `;
 
 export default observer((props: SimBoolIndicatorProps) => {
-    const { sim, text, dataName, threshold } = props;
+    const { sim, text, varName: dataName, threshold } = props;
     const def = sim.getData(dataName);
     const active = (def?.value ?? 0) > (threshold ?? 0.5);
     return (

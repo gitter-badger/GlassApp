@@ -1,28 +1,29 @@
-import styled from "styled-components";
-import { ACTIVE_COLOR } from "../theme";
+import styled, { css } from "styled-components";
+import { ACTIVE_COLOR, ACTIVATABLE_HOVER_COLOR, DISABLED_COLOR, ACTIVATABLE_COLOR } from "../theme";
+
+const NORMAL_CSS = css`
+    :hover {
+        background-color: ${ACTIVATABLE_HOVER_COLOR};
+    }
+`;
+
+const DISABLED_CSS = css`
+    background-color: ${DISABLED_COLOR};
+`;
+
+const ACTIVE_CSS = css`
+    box-shadow: 4px 4px 8px 2px hsla(0, 0%, 0%, 50%) inset;
+    background-color: ${ACTIVE_COLOR};
+`;
 
 export default styled.button<{ active?: boolean; disabled?: boolean }>`
     padding: 8px;
     border: 2px solid black;
-    background-color: ${props => getBgColor(!!props.active, !!props.disabled)};
     border-radius: 4px;
+    background-color: ${ACTIVATABLE_COLOR};
 
-    :hover {
-        background-color: ${props => getHoverBgColor(!!props.active)};
-    }
+    ${p => p.active && ACTIVE_CSS}
+    ${p => p.disabled && DISABLED_CSS}
+
+    ${p => !p.disabled && NORMAL_CSS}
 `;
-
-function getBgColor(active: boolean, disabled: boolean) {
-    if (active) {
-        if (disabled) return "#00cccc";
-        else return ACTIVE_COLOR;
-    } else {
-        if (disabled) return "#888888";
-        else return "#ffffff";
-    }
-}
-
-function getHoverBgColor(active: boolean) {
-    if (active) return "#00dddd";
-    else "#cccccc";
-}

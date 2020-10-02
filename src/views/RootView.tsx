@@ -1,9 +1,8 @@
 import * as React from "react";
 import { HashRouter as Router, Route, Switch } from "react-router-dom";
-import styled, { createGlobalStyle } from "styled-components";
-import { SimModel } from "../models/sim";
-import { useInterval } from "../utils/react";
+import { createGlobalStyle } from "styled-components";
 import AppView from "./AppView";
+import SandboxView from "./SandboxView";
 
 const GlobalStyle = createGlobalStyle`
   html, body, #root {
@@ -20,7 +19,16 @@ export default function RootView(): JSX.Element {
     return (
         <React.Fragment>
             <GlobalStyle />
-            <AppView />
+            <Router>
+                <Switch>
+                    <Route path="/sandbox">
+                        <SandboxView />
+                    </Route>
+                    <Route path="/">
+                        <AppView />
+                    </Route>
+                </Switch>
+            </Router>
         </React.Fragment>
     );
 }

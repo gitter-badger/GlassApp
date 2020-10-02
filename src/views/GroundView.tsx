@@ -1,6 +1,6 @@
 import * as React from "react";
 import { observer } from "mobx-react";
-import CollapseHeading from "../components/CollapseHeading";
+import CollapseHeading from "../components/VerticalCollapse";
 import { SimModel } from "../models/sim";
 import SimEventButton from "../components/SimEventButton";
 import SimVarToggle from "../components/SimVarToggle";

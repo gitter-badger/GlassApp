@@ -2,7 +2,7 @@ import { observer } from "mobx-react";
 import * as React from "react";
 import styled from "styled-components";
 import BoolSimToggle from "../components/SimVarToggle";
-import CollapseHeading from "../components/CollapseHeading";
+import CollapseHeading from "../components/VerticalCollapse";
 import ColumnDiv from "../components/ColumnDiv";
 import { SimModel } from "../models/sim";
 

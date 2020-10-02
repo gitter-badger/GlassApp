@@ -2,10 +2,11 @@ import { observer } from "mobx-react";
 import * as React from "react";
 import styled from "styled-components";
 import BoolSimToggle from "../components/SimVarToggle";
-import CollapseHeading from "../components/CollapseHeading";
+import CollapseHeading from "../components/VerticalCollapse";
 import ColumnDiv from "../components/ColumnDiv";
 import { SimModel } from "../models/sim";
 import NumberInput from "../components/NumberInput";
+import SimBoolIndicator from "../components/SimBoolIndicator";
 
 export interface LightsViewProps {
     sim: SimModel;
@@ -56,7 +57,7 @@ export default observer((props: LightsViewProps) => {
                 varName="AUTOPILOT ATTITUDE HOLD"
                 eventName="AP_ATT_HOLD"
             />
-            <BoolSimToggle // TODO: There is no event to enable Vertical Speed mode
+            <SimBoolIndicator // TODO: There is no event to enable Vertical Speed mode
                 sim={sim}
                 text="Vertical Speed"
                 varName="AUTOPILOT VERTICAL HOLD"

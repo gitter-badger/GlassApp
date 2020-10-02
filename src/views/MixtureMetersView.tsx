@@ -1,7 +1,7 @@
 import { range } from "lodash";
 import { observer } from "mobx-react";
 import * as React from "react";
-import CollapseHeading from "../components/CollapseHeading";
+import CollapseHeading from "../components/VerticalCollapse";
 import ValueMeter from "../components/ValueMeter";
 import { SimModel } from "../models/sim";
 

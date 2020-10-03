@@ -1,26 +1,30 @@
 import { action, autorun, observable } from "mobx";
 import { Feature, Map, View } from "ol";
-import { distance } from "ol/coordinate";
-import LineString from "ol/geom/LineString";
+import ScaleLine from "ol/control/ScaleLine";
 import Point from "ol/geom/Point";
-import { defaults as defaultInteractions } from "ol/interaction";
-import PointerInteraction from "ol/interaction/Pointer";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import "ol/ol.css";
-import { fromLonLat, toLonLat } from "ol/proj";
+import { fromLonLat } from "ol/proj";
 import OSM from "ol/source/OSM";
 import VectorSource from "ol/source/Vector";
 import Icon from "ol/style/Icon";
 import IconAnchorUnits from "ol/style/IconAnchorUnits";
-import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import planeIconUrl from "../../assets/plane.png";
-import { arrDelete, degToRad, feetToNauticalMiles } from "../utils/common";
+import { degToRad } from "../utils/common";
+import { AppModel } from "./app";
 import { SimModel } from "./sim";
-import ScaleLine from "ol/control/ScaleLine";
+import Draw from "ol/interaction/Draw";
+import GeometryType from "ol/geom/GeometryType";
+import { Coordinate } from "ol/coordinate";
 
 export class MapModel {
+    osmSource = new OSM({});
+    osmLayer = new TileLayer({
+        source: this.osmSource,
+    });
+
     // Plane
     planeIcon = new Icon({
         anchor: [0.5, 0.5],
@@ -28,6 +32,7 @@ export class MapModel {
         anchorXUnits: IconAnchorUnits.FRACTION,
         anchorYUnits: IconAnchorUnits.FRACTION,
         src: planeIconUrl,
+        rotateWithView: true,
     });
     planeIconStyle = new Style({
         image: this.planeIcon,
@@ -44,54 +49,20 @@ export class MapModel {
         source: this.planeSource,
     });
 
-    // Waypoint points
-    waypointPointFeatures: Feature[] = [];
-
-    // Waypoint line
-    waypointLine = new LineString([]);
-    waypointLineStyle = new Style({
-        stroke: new Stroke({
-            width: 2,
-            color: "#ff0000",
-        }),
-    });
-    waypointLineFeature = new Feature({
-        geometry: this.waypointLine,
-    });
-    waypointSource = new VectorSource({
-        features: [this.waypointLineFeature],
-    });
-    waypointLayer = new VectorLayer({
-        source: this.waypointSource,
+    // Drawing
+    drawSource = new VectorSource({});
+    drawInteraction = new Draw({
+        source: this.drawSource,
+        type: GeometryType.LINE_STRING,
     });
 
     view = new View({
         center: [0, 0],
         zoom: 14,
     });
-
-    interactions = defaultInteractions();
-    placePinInteraction = new PointerInteraction({
-        handleDownEvent: event => {
-            if (this.addingWaypoint) {
-                const [lon, lat] = toLonLat(event.coordinate);
-                this.waypoints.push([lon, lat]);
-                this.stopAddingWaypoint();
-            }
-            return false;
-        },
-    });
-
     map = new Map({
-        layers: [
-            new TileLayer({
-                source: new OSM({ imageSmoothing: true }),
-            }),
-            this.waypointLayer,
-            this.planeLayer,
-        ],
+        layers: [this.osmLayer, this.planeLayer],
         view: this.view,
-        interactions: this.interactions,
         controls: [
             new ScaleLine({
                 units: "nautical",
@@ -103,16 +74,10 @@ export class MapModel {
     followPlane: boolean = true;
 
     @observable
-    showWaypoints: boolean = false;
+    followHeading: boolean = false;
 
     @observable
-    addingWaypoint: boolean = false;
-
-    @observable
-    waypoints: Array<[number, number]> = [];
-
-    @observable
-    selectedWaypoint: [number, number] | null = null;
+    showLog: boolean = false;
 
     @observable
     planeLongitude: number = 0;
@@ -123,22 +88,30 @@ export class MapModel {
     @observable
     planeHeading: number = 0;
 
+    @observable
+    measuring: boolean = false;
+
+    private app: AppModel;
     private sim: SimModel;
 
-    constructor(sim: SimModel) {
+    private disposers: Array<() => void> = [];
+
+    constructor(app: AppModel) {
+        this.app = app;
+        this.sim = app.sim;
+
         this.planeFeature.setStyle(this.planeIconStyle);
-        this.waypointLineFeature.setStyle(this.waypointLineStyle);
 
-        this.sim = sim;
+        this.disposers.push(autorun(() => this.update()));
 
-        this.waypointLayer.setVisible(this.showWaypoints);
+        this.drawInteraction.on("drawstart", evt => {
+            console.log("Draw Start");
+        });
+    }
 
-        setInterval(() => {
-            this.planeLatitude = sim.getData("PLANE LATITUDE")?.value ?? this.planeLatitude;
-            this.planeLongitude = sim.getData("PLANE LONGITUDE")?.value ?? this.planeLongitude;
-            this.planeHeading =
-                sim.getData("PLANE HEADING DEGREES TRUE")?.value ?? this.planeHeading;
-        }, 500);
+    dispose() {
+        this.disposers.forEach(d => d());
+        this.disposers = [];
     }
 
     onRef = <T extends HTMLElement>(ref: T | null): void => {
@@ -146,69 +119,57 @@ export class MapModel {
     };
 
     @action.bound
-    toggleWaypoints(): void {
-        this.showWaypoints = !this.showWaypoints;
-
-        this.waypointLayer.setVisible(this.showWaypoints);
-    }
-
-    @action.bound
     toggleFollowPlane(): void {
         this.followPlane = !this.followPlane;
     }
 
     @action.bound
-    startAddingWaypoint(): void {
-        this.addingWaypoint = true;
+    toggleFollowPlaneHeading(): void {
+        this.followHeading = !this.followHeading;
 
-        this.interactions.push(this.placePinInteraction);
+        if (!this.followHeading) {
+            this.view.setRotation(0);
+        }
     }
 
     @action.bound
-    stopAddingWaypoint(): void {
-        this.addingWaypoint = false;
-        this.interactions.remove(this.placePinInteraction);
+    toggleShowLog(): void {
+        this.showLog = !this.showLog;
     }
 
-    dc = autorun(() => {
-        const planeCoords = fromLonLat([this.planeLongitude, this.planeLatitude]);
+    @action.bound
+    toggleMeasure(): void {
+        this.measuring = !this.measuring;
 
-        const open = [...this.waypoints];
-        const toRemove: Array<[number, number]> = [];
-        while (open.length > 0) {
-            const nextWaypoint = open.shift();
-            if (nextWaypoint == null) break;
-
-            const lenInFt = new LineString([fromLonLat(nextWaypoint), planeCoords]).getLength();
-
-            if (lenInFt > 500) break;
-            toRemove.push(nextWaypoint);
+        if (this.measuring) {
+            this.map.addInteraction(this.drawInteraction);
+        } else {
+            this.map.removeInteraction(this.drawInteraction);
         }
-        toRemove.forEach(wp => arrDelete(this.waypoints, wp));
+    }
 
-        // UPDATE VIEW
+    resetNorth(): void {
+        this.view.setRotation(0);
+    }
+
+    private update() {
+        this.planeLatitude = this.sim.getData("PLANE LATITUDE")?.value ?? this.planeLatitude;
+        this.planeLongitude = this.sim.getData("PLANE LONGITUDE")?.value ?? this.planeLongitude;
+        this.planeHeading =
+            this.sim.getData("PLANE HEADING DEGREES TRUE")?.value ?? this.planeHeading;
+
+        const planeCoords = fromLonLat([this.planeLongitude, this.planeLatitude]);
+        const planeHeadingDeg = degToRad(this.planeHeading);
 
         // Update plane
         this.planePoint.setCoordinates(planeCoords);
-        this.planeIcon.setRotation(degToRad(this.planeHeading));
+        this.planeIcon.setRotation(planeHeadingDeg);
         if (this.followPlane) {
             this.view.setCenter(planeCoords);
         }
 
-        // Update waypoints
-        const waypointCoords = this.waypoints.map(w => fromLonLat(w));
-
-        // Update waypoint points
-        const oldPointFeatures = this.waypointPointFeatures;
-        this.waypointPointFeatures = waypointCoords.map(
-            coord => new Feature({ geometry: new Point(coord) })
-        );
-        for (const feat of oldPointFeatures) {
-            this.waypointSource.removeFeature(feat);
+        if (this.followHeading) {
+            this.view.setRotation(-1 * planeHeadingDeg);
         }
-        this.waypointSource.addFeatures(this.waypointPointFeatures);
-
-        // Update waypoint line
-        this.waypointLine.setCoordinates([planeCoords, ...waypointCoords]);
-    });
+    }
 }

@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { ENABLED_COLOR } from "../theme";
 import { mapRange } from "../utils/common";
 
-export interface ValueProgressProps {
+export interface MeterProps {
     min?: number;
     value?: number;
     max?: number;
@@ -54,7 +54,7 @@ const MyOverlay = styled.div`
     transform: translate(-50%, -50%);
 `;
 
-export default observer((props: ValueProgressProps) => {
+export default observer((props: MeterProps) => {
     const { text, value, min, max, title } = props;
 
     const [clicking, setClicking] = React.useState(false);

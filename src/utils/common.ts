@@ -59,7 +59,7 @@ export function mapRange(
     toMin: number,
     toMax: number
 ): number {
-    return ((value - fromMin) * (fromMax - fromMin)) / (toMax - toMin) + toMin;
+    return ((value - fromMin) * (toMax - toMin)) / (fromMax - fromMin) + toMin;
 }
 
 export function arrDelete<T>(arr: T[], item: T): T[] {
@@ -67,4 +67,26 @@ export function arrDelete<T>(arr: T[], item: T): T[] {
     if (idx < 0) return arr;
     arr.splice(idx, 1);
     return arr;
+}
+
+export function slidingWindow<T>(arr: T[], size: number): T[][] {
+    if (size > arr.length) return [];
+
+    const results: T[][] = [];
+    // [a, b, c] size = 2
+    //
+    for (let windowOffset = 0; windowOffset < arr.length - size + 1; windowOffset++) {
+        const windowResult: T[] = [];
+        for (let arrIdx = 0; arrIdx < size; arrIdx++) {
+            windowResult.push(arr[arrIdx + windowOffset]);
+        }
+        results.push(windowResult);
+    }
+
+    return results;
+}
+
+export function interval(fn: () => void, ms: number): () => void {
+    const i = setInterval(fn, ms);
+    return () => clearInterval(i);
 }

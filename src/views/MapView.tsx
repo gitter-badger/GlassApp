@@ -1,21 +1,21 @@
-import { MapModel } from "../models/map";
-
-import * as React from "react";
-import { observer } from "mobx-react";
-import styled, { css } from "styled-components";
-import ToggleButton from "../components/ToggleButton";
-import { flexSpacing } from "../utils/style";
-import Button from "../components/Button";
-import VerticalCollapse from "../components/VerticalCollapse";
-import { fromLonLat, toLonLat } from "ol/proj";
-import { getLength } from "ol/sphere";
-import { arrDelete, feetToNauticalMiles } from "../utils/common";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import LineString from "ol/geom/LineString";
+import { observer } from "mobx-react";
+import * as React from "react";
+import styled from "styled-components";
+import Button from "../components/Button";
+import ToggleButton from "../components/ToggleButton";
+import VerticalCollapse from "../components/VerticalCollapse";
+import BlackboxModel from "../models/blackbox";
+import { MapModel } from "../models/map";
+import { SimModel } from "../models/sim";
+import { radToDeg } from "../utils/common";
+import { flexSpacing } from "../utils/style";
 
 export interface MapViewProps {
     map: MapModel;
+    bbox: BlackboxModel;
+    sim: SimModel;
 }
 
 const RootDiv = styled.div`
@@ -36,80 +36,132 @@ const MapDiv = styled.div`
 
 const ControlsDiv = styled.div`
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 200px;
+    top: 8px;
+    right: 8px;
 
-    margin: 8px;
+    ${flexSpacing(4, "row")}
 
-    ${flexSpacing(4, "column")}
+    pointer-events: none;
 
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: stretch;
 `;
 
-const WaypointGrid = styled.div`
+const BottomRightOverlay = styled.div`
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+
+    ${flexSpacing(4, "row")}
+
+    pointer-events: none;
+
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+`;
+
+const EnvironmentDiv = styled.div`
     display: grid;
     grid-template-columns: 1fr auto;
+    background-color: hsla(0, 0%, 100%, 50%);
+    padding: 8px;
     gap: 2px;
 `;
 
+const Column = styled.div`
+    display: flex;
+    width: 150px;
+    flex-direction: column;
+    align-items: stretch;
+
+    pointer-events: none;
+    * {
+        pointer-events: auto;
+    }
+
+    ${flexSpacing(4, "column")}
+`;
+
 export default observer((props: MapViewProps) => {
-    const { map } = props;
+    const { map, bbox, sim } = props;
+
+    const oat = sim.getData("AMBIENT TEMPERATURE")?.value;
+    const oatText = oat != null ? `${oat.toFixed(2)}°C` : "N/A";
+
+    const windVelocity = sim.getData("AMBIENT WIND VELOCITY")?.value;
+    const windVelocityText = windVelocity != null ? `${Math.round(windVelocity)} kts` : "N/A";
+    const windDirection = sim.getData("AMBIENT WIND DIRECTION")?.value ?? 0;
+    const windDirectionText = `${Math.round(windDirection)}°`;
+    const windDirectionTransform = `rotate(${Math.round(
+        radToDeg(map.view.getRotation()) + windDirection
+    )}deg)`;
 
     return (
         <RootDiv>
             <MapDiv ref={map.onRef}></MapDiv>
             <ControlsDiv>
-                <VerticalCollapse title="Map" defaultCollapsed>
-                    <ToggleButton
-                        toggled={map.followPlane}
-                        onToggle={() => map.toggleFollowPlane()}
-                        text="Follow Plane"
-                    />
-                    <ToggleButton
-                        disabled={map.addingWaypoint}
-                        toggled={map.showWaypoints}
-                        onToggle={() => map.toggleWaypoints()}
-                        text="Show Waypoints"
-                    />
-                </VerticalCollapse>
-                {map.showWaypoints && (
-                    <VerticalCollapse title="Waypoints" defaultCollapsed>
-                        <ToggleButton
-                            toggled={map.addingWaypoint}
-                            onToggle={() =>
-                                map.addingWaypoint
-                                    ? map.stopAddingWaypoint()
-                                    : map.startAddingWaypoint()
-                            }
-                            text={map.addingWaypoint ? "Placing Waypoint..." : "Place Waypoint"}
-                        />
-                        <WaypointGrid>
-                            {map.waypoints.map(wp => (
-                                <React.Fragment key={wp[0]}>
-                                    <ToggleButton key={wp[0]} text={getWaypointText(wp)} />
-                                    <Button onClick={() => arrDelete(map.waypoints, wp)}>
-                                        <FontAwesomeIcon icon={faTrash} />
-                                    </Button>
-                                </React.Fragment>
-                            ))}
-                        </WaypointGrid>
+                <Column>
+                    <VerticalCollapse title="Map" defaultCollapsed>
+                        <Button onClick={() => map.resetNorth()}>Reset North</Button>
                     </VerticalCollapse>
-                )}
+                </Column>
+                <Column>
+                    <VerticalCollapse title="Plane" defaultCollapsed>
+                        <ToggleButton
+                            active={map.followPlane}
+                            onClick={() => map.toggleFollowPlane()}
+                            text="Follow Location"
+                        />
+                        <ToggleButton
+                            active={map.followHeading}
+                            onClick={() => map.toggleFollowPlaneHeading()}
+                            text="Follow Heading"
+                        />
+                    </VerticalCollapse>
+                </Column>
+                <Column>
+                    <VerticalCollapse title="Blackbox" defaultCollapsed>
+                        <ToggleButton
+                            active={bbox.logging}
+                            onClick={() =>
+                                bbox.logging ? bbox.stopLogging() : bbox.startLogging()
+                            }
+                            text={bbox.logging ? "Logging..." : "Log Flight"}
+                        />
+                        <Button onClick={() => bbox.clearLog()}>Clear Log</Button>
+                        <ToggleButton
+                            active={map.showLog}
+                            onClick={() => map.toggleShowLog()}
+                            text="Display Log"
+                        />
+                        <Button onClick={() => bbox.downloadLog()}>Download</Button>
+                    </VerticalCollapse>
+                </Column>
             </ControlsDiv>
+            <BottomRightOverlay>
+                <Column>
+                    <VerticalCollapse title="Environment">
+                        <EnvironmentDiv>
+                            <label title="Outside Air Temperature">OAT</label>
+                            <span>{oatText}</span>
+                            <label>Wind Spd</label>
+                            <span>{windVelocityText}</span>
+                            <label>Wind Dir</label>
+                            <div>
+                                <span>{windDirectionText}</span>
+                                <FontAwesomeIcon
+                                    icon={faArrowUp}
+                                    style={{
+                                        transform: windDirectionTransform,
+                                    }}
+                                />
+                            </div>
+                        </EnvironmentDiv>
+                    </VerticalCollapse>
+                </Column>
+            </BottomRightOverlay>
         </RootDiv>
     );
-
-    function getWaypointText(wp: [number, number]): string {
-        const len = feetToNauticalMiles(
-            new LineString([
-                fromLonLat(wp),
-                fromLonLat([map.planeLongitude, map.planeLatitude]),
-            ]).getLength()
-        );
-
-        return `(${wp[0].toFixed(4)}, ${wp[1].toFixed(4)}) ${len.toFixed(3)}`;
-    }
 });

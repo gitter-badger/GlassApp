@@ -12,6 +12,7 @@ export interface DebugViewProps {
 
 export default observer((props: DebugViewProps) => {
     const { sim } = props;
+
     return (
         <CollapseHeading defaultCollapsed title="Debug">
             <SimVarWatcherView sim={sim} />

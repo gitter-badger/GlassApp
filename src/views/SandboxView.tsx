@@ -3,6 +3,8 @@ import styled from "styled-components";
 import Button from "../components/Button";
 import { observer } from "mobx-react";
 import { Link } from "react-router-dom";
+import Slider from "../components/Slider";
+import ValueMeter from "../components/Meter";
 
 export interface SandboxView {}
 
@@ -20,6 +22,8 @@ const SandDiv = styled.div`
 `;
 
 export default observer((props: SandboxView) => {
+    const [value, setValue] = React.useState(0);
+
     return (
         <RootDiv>
             <Link to="/">Back to Home</Link>
@@ -36,6 +40,22 @@ export default observer((props: SandboxView) => {
             <SandDiv>
                 <label>Button (Disabled)</label>
                 <Button disabled>Todo</Button>
+            </SandDiv>
+
+            <SandDiv>
+                <Slider
+                    value={value}
+                    onChange={v => {
+                        console.log("Slider", v);
+                        setValue(v);
+                    }}
+                    label="Example"
+                    format={v => `${(v * 100).toFixed(1)} %`}
+                />
+            </SandDiv>
+
+            <SandDiv>
+                <ValueMeter value={value} text={`${(value * 100).toFixed(1)} %`} title="Example" />
             </SandDiv>
         </RootDiv>
     );

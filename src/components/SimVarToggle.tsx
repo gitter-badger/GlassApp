@@ -17,9 +17,9 @@ export default observer((props: SimVarToggleProps) => {
     return (
         <ToggleButton
             text={props.text}
-            onToggle={onToggle}
+            onClick={onToggle}
             disabled={def == null}
-            toggled={defBool}
+            active={defBool}
         />
     );
 

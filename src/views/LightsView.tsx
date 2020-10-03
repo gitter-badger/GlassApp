@@ -14,17 +14,52 @@ export default observer((props: LightsViewProps) => {
     const { sim } = props;
     return (
         <CollapseHeading title="Lights">
-            <BoolSimToggle sim={sim} text="Taxi" varName="LIGHT TAXI" />
-            <BoolSimToggle sim={sim} text="Beacon" varName="LIGHT BEACON" />
+            <BoolSimToggle
+                sim={sim}
+                text="Taxi"
+                varName="LIGHT TAXI"
+                eventName="TOGGLE_TAXI_LIGHTS"
+            />
+            <BoolSimToggle
+                sim={sim}
+                text="Beacon"
+                varName="LIGHT BEACON"
+                eventName="TOGGLE_BEACON_LIGHTS"
+            />
 
-            <BoolSimToggle sim={sim} text="Navigation" varName="LIGHT NAV" />
-            <BoolSimToggle sim={sim} text="Landing" varName="LIGHT LANDING" />
+            <BoolSimToggle
+                sim={sim}
+                text="Navigation"
+                varName="LIGHT NAV"
+                eventName="TOGGLE_NAV_LIGHTS"
+            />
+            <BoolSimToggle
+                sim={sim}
+                text="Landing"
+                varName="LIGHT LANDING"
+                eventName="LANDING_LIGHTS_TOGGLE"
+            />
 
-            <BoolSimToggle sim={sim} text="Strobe" varName="LIGHT STROBE" />
-            <BoolSimToggle sim={sim} text="Logo" varName="LIGHT LOGO" />
+            <BoolSimToggle
+                sim={sim}
+                text="Strobe"
+                varName="LIGHT STROBE"
+                eventName="STROBES_TOGGLE"
+            />
+            <BoolSimToggle
+                sim={sim}
+                text="Logo"
+                varName="LIGHT LOGO"
+                eventName="TOGGLE_LOGO_LIGHTS"
+            />
 
             <BoolSimToggle sim={sim} text="Cabin" varName="LIGHT CABIN" />
-            <BoolSimToggle sim={sim} text="Panel" varName="LIGHT PANEL" />
+            <BoolSimToggle
+                sim={sim}
+                text="Panel"
+                varName="LIGHT PANEL"
+                eventName="PANEL_LIGHTS_TOGGLE"
+            />
         </CollapseHeading>
     );
 });

@@ -4,16 +4,18 @@ import * as React from "react";
 import Button from "./Button";
 
 export interface ToggleButtonProps {
-    toggled?: boolean;
+    active?: boolean;
     disabled?: boolean;
-    onToggle?(): void;
+    onClick?(): void;
     text: React.ReactNode;
+    children?: React.ReactNode | React.ReactNode[];
 }
 
 export default function ToggleButton(props: ToggleButtonProps): JSX.Element {
     return (
-        <Button disabled={props.disabled} active={props.toggled} onClick={() => props.onToggle?.()}>
-            <FontAwesomeIcon icon={props.toggled ? faCheckSquare : faSquare} /> {props.text}
+        <Button disabled={props.disabled} active={props.active} onClick={() => props.onClick?.()}>
+            <FontAwesomeIcon icon={props.active ? faCheckSquare : faSquare} />{" "}
+            {props.text ?? props.children}
         </Button>
     );
 }

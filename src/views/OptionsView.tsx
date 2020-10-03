@@ -4,6 +4,7 @@ import CollapseHeading from "../components/VerticalCollapse";
 import StringInput from "../components/StringInput";
 import ToggleButton from "../components/ToggleButton";
 import { SimModel } from "../models/sim";
+import Button from "../components/Button";
 
 export interface DebugViewProps {
     sim: SimModel;
@@ -13,13 +14,17 @@ export default observer((props: DebugViewProps) => {
     const { sim } = props;
 
     const simUrl = sim.serverUrl;
+    const grantedNotis = Notification.permission === "granted";
 
     return (
         <CollapseHeading defaultCollapsed title="Options">
+            <Button disabled={grantedNotis} onClick={() => void Notification.requestPermission()}>
+                {grantedNotis ? "Granted Notifications" : "Notification Access"}
+            </Button>
             <ToggleButton
                 text={sim.connected ? "Disconnect" : "Connect"}
-                toggled={sim.connected}
-                onToggle={() => (sim.connected ? sim.disconnect() : sim.connect())}
+                active={sim.connected}
+                onClick={() => (sim.connected ? sim.disconnect() : sim.connect())}
             />
             <StringInput
                 label="Glass Server URL"

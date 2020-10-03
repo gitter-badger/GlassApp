@@ -19,6 +19,8 @@ const MyHeading = styled.div<{ collapsed?: boolean }>`
     padding: 4px 8px;
     background-color: hsl(0, 0%, 30%);
     color: white;
+    user-select: none;
+    cursor: pointer;
 
     border-radius: ${p => (p.collapsed ? "16px 16px 16px 16px" : "16px 16px 2px 2px")};
 

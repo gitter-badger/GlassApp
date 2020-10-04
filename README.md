@@ -4,7 +4,7 @@ Second device display for Flight Sim 2020.
 
 # Using Glass
 
-Available [here] (https://russleyshaw.github.io/GlassApp/)
+Available [here](https://russleyshaw.github.io/GlassApp/)
 
 Download the server [here](https://github.com/russleyshaw/GlassServer)
 

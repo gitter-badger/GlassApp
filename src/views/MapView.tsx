@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { observer } from "mobx-react";
 import * as React from "react";
 import styled from "styled-components";
-import Button from "../components/Button";
-import ToggleButton from "../components/ToggleButton";
+import Button from "../components/base/Button";
+import ToggleButton from "../components/base/Toggle";
 import VerticalCollapse from "../components/VerticalCollapse";
 import BlackboxModel from "../models/blackbox";
 import { MapModel } from "../models/map";
@@ -24,6 +24,9 @@ const RootDiv = styled.div`
     height: 100%;
     position: relative;
     overflow: hidden;
+
+    resize: horizontal;
+    border-left: 3px black solid;
 `;
 
 const MapDiv = styled.div`

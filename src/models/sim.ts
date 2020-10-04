@@ -1,11 +1,16 @@
-import { computed, observable } from "mobx";
-import { delayMs } from "../utils/common";
+import { autorun, observable } from "mobx";
+import { Disposer, interval } from "../utils/common";
 import { Stored } from "./stored";
 
 export class SimModel {
     @observable
     private sock?: WebSocket;
-    private pollingInterval?: number;
+
+    @observable
+    connected: boolean = false;
+
+    private retryConnectionDisposer?: Disposer;
+    private pollingIntervalDisposer?: Disposer;
 
     @observable
     serverUrl = new Stored<string>({
@@ -19,20 +24,18 @@ export class SimModel {
     private simDataCache = new Map<string, SimData>();
     private unknownSimDataNames = new Set<string>();
 
-    @computed
-    get connected(): boolean {
-        return this.sock != null;
+    constructor() {
+        this.connect();
+
+        autorun(() => {
+            if (this.sock != null) return;
+
+            this.connect();
+        });
     }
 
     getData(name: string): SimData | undefined {
         return this.getCache(name);
-    }
-
-    isDataTrue(name: string): boolean {
-        const def = this.getData(name);
-        if (def == null) return false;
-
-        return def.value > 0.5;
     }
 
     setData(name: string, value: number) {
@@ -44,23 +47,33 @@ export class SimModel {
         });
     }
 
-    connect() {
+    connect(): void {
+        // Already processing socket
+        if (this.sock != null) return;
+
         console.log("Connecting  to GlassServer socket...");
+        this.connected = false;
         const sock = new WebSocket(this.serverUrl.get());
+        this.sock = sock;
 
-        sock.onopen = () => {
+        setTimeout(() => {
+            if (sock.readyState == sock.OPEN) return;
+            sock.close();
+        }, 2000);
+
+        sock.addEventListener("open", () => {
             console.log("Connected to GlassServer socket!");
-            this.sock = sock;
+            this.connected = true;
 
-            clearInterval(this.pollingInterval);
-            this.pollingInterval = setInterval(() => this.tick(), 250);
-        };
+            this.pollingIntervalDisposer?.();
+            this.pollingIntervalDisposer = interval(() => this.tick(), 250);
+        });
 
-        sock.onmessage = event => {
+        sock.addEventListener("message", event => {
             this.processCommand(JSON.parse(event.data as string));
-        };
+        });
 
-        sock.onclose = ev => {
+        sock.addEventListener("close", ev => {
             console.log(
                 "Closed connection to GlassServer socket.",
                 ev.reason,
@@ -68,19 +81,9 @@ export class SimModel {
                 ev.wasClean
             );
 
-            if (!ev.wasClean) {
-                this.connect();
-            }
-        };
-    }
-
-    disconnect() {
-        const sock = this.sock;
-        if (sock == null) return;
-
-        console.log("Disconnecting from Glass Server...");
-
-        sock.close();
+            this.sock = undefined;
+            this.connected = false;
+        });
     }
 
     sendEvent(name: string, value?: number) {
@@ -99,6 +102,8 @@ export class SimModel {
     }
 
     private tick() {
+        if (!this.connected) return;
+
         this.sendCommand({ getData: true, subscribe: [...this.unknownSimDataNames] });
     }
 

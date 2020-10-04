@@ -1,5 +1,10 @@
 import styled, { css } from "styled-components";
-import { ACTIVE_COLOR, ACTIVATABLE_HOVER_COLOR, DISABLED_COLOR, ACTIVATABLE_COLOR } from "../theme";
+import {
+    ACTIVE_COLOR,
+    ACTIVATABLE_HOVER_COLOR,
+    DISABLED_COLOR,
+    ACTIVATABLE_COLOR,
+} from "../../theme";
 
 const NORMAL_CSS = css`
     :hover {
@@ -19,7 +24,7 @@ const ACTIVE_CSS = css`
 export default styled.button<{ active?: boolean; disabled?: boolean }>`
     padding: 8px;
     border: 2px solid black;
-    border-radius: 4px;
+    border-radius: 8px;
     background-color: ${ACTIVATABLE_COLOR};
 
     ${p => p.active && ACTIVE_CSS}

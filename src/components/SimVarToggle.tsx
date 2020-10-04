@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import * as React from "react";
 import { SimModel } from "../models/sim";
-import ToggleButton from "./ToggleButton";
+import ToggleButton from "./base/Toggle";
 
 export interface SimVarToggleProps {
     sim: SimModel;

@@ -1,10 +1,12 @@
 import * as React from "react";
 import styled from "styled-components";
-import Button from "../components/Button";
+import Button from "../components/base/Button";
 import { observer } from "mobx-react";
 import { Link } from "react-router-dom";
-import Slider from "../components/Slider";
-import ValueMeter from "../components/Meter";
+import Slider from "../components/base/Slider";
+import ValueMeter from "../components/base/Meter";
+import Alerter from "../components/base/Alerter";
+import Toggle from "../components/base/Toggle";
 
 export interface SandboxView {}
 
@@ -56,6 +58,12 @@ export default observer((props: SandboxView) => {
 
             <SandDiv>
                 <ValueMeter value={value} text={`${(value * 100).toFixed(1)} %`} title="Example" />
+            </SandDiv>
+
+            <SandDiv>
+                <Toggle text="Trigger Alert" active={value !== 1} onClick={() => setValue(1)} />
+                <Alerter say="This is an example." text="Example" active={value === 1} />
+                <Alerter say="This is a second example." text="Example 2" active={value === 1} />
             </SandDiv>
         </RootDiv>
     );

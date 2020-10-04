@@ -1,21 +1,20 @@
 import { observer } from "mobx-react";
 import * as React from "react";
-import styled from "styled-components";
+import NumberInput from "../components/base/NumberInput";
+import SimBoolIndicator from "../components/SimBoolIndicator";
 import BoolSimToggle from "../components/SimVarToggle";
 import CollapseHeading from "../components/VerticalCollapse";
-import ColumnDiv from "../components/ColumnDiv";
 import { SimModel } from "../models/sim";
-import NumberInput from "../components/NumberInput";
-import SimBoolIndicator from "../components/SimBoolIndicator";
 
-export interface LightsViewProps {
+export interface AutopilotViewProps {
     sim: SimModel;
 }
 
-export default observer((props: LightsViewProps) => {
+export default observer((props: AutopilotViewProps) => {
     const { sim } = props;
 
-    if (!sim.isDataTrue("AUTOPILOT AVAILABLE")) return null;
+    const apAvailable = sim.getData("AUTOPILOT AVAILABLE")?.value === 1;
+    if (!apAvailable) return null;
 
     return (
         <CollapseHeading title="Autopilot">
@@ -57,11 +56,13 @@ export default observer((props: LightsViewProps) => {
                 varName="AUTOPILOT ATTITUDE HOLD"
                 eventName="AP_ATT_HOLD"
             />
-            <SimBoolIndicator // TODO: There is no event to enable Vertical Speed mode
+            <BoolSimToggle
                 sim={sim}
-                text="Vertical Speed"
-                varName="AUTOPILOT VERTICAL HOLD"
+                text="Airspeed Hold"
+                varName="AUTOPILOT AIRSPEED HOLD"
+                eventName="AP_AIRSPEED_HOLD"
             />
+            <AirspeedInput sim={sim} />
             <VerticalSpeedInput sim={sim} />
         </CollapseHeading>
     );
@@ -101,17 +102,33 @@ const AltitudeInput = observer((props: { sim: SimModel }) => {
     );
 });
 
+const AirspeedInput = observer((props: { sim: SimModel }) => {
+    const { sim } = props;
+
+    const val = sim.getData("AUTOPILOT AIRSPEED HOLD VAR")?.value;
+
+    return (
+        <NumberInput
+            label="Airspeed"
+            disabled={val == null}
+            value={Math.round(val ?? 0)}
+            format={v => `${v} kts`}
+            onSubmit={value => value != null && sim.sendEvent("AP_SPD_VAR_SET", Math.round(value))}
+        />
+    );
+});
+
 const VerticalSpeedInput = observer((props: { sim: SimModel }) => {
     const { sim } = props;
 
-    const dir = sim.getData("AUTOPILOT VERTICAL HOLD VAR")?.value;
+    const val = sim.getData("AUTOPILOT VERTICAL HOLD VAR")?.value;
 
     return (
         <NumberInput
             label="Vertical Speed"
-            disabled={dir == null}
-            value={Math.round(dir ?? 0)}
-            format={v => `${v} ft/sec`}
+            disabled={val == null}
+            value={Math.round(val ?? 0)}
+            format={v => `${v} kts`}
             onSubmit={value =>
                 value != null && sim.sendEvent("AP_VS_VAR_SET_ENGLISH", Math.round(value))
             }

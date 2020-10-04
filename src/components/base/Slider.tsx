@@ -1,7 +1,7 @@
 import * as React from "react";
 import { observer } from "mobx-react";
 import styled from "styled-components";
-import { ACTIVATABLE_COLOR, ACTIVE_COLOR } from "../theme";
+import { ACTIVATABLE_COLOR, ACTIVE_COLOR } from "../../theme";
 
 export interface SliderProps {
     label: string;

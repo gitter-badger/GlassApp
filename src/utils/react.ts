@@ -5,7 +5,10 @@ import * as React from "react";
  * @param callback
  * @param delayMs Interval delay time. Use null to disable the interval.
  */
-export function useInterval(callback: () => void, delayMs: number | false | null): void {
+export function useInterval(
+    callback: () => void,
+    delayMs: number | false | null | undefined
+): void {
     const savedCallback = React.useRef(callback);
 
     // Remember the latest callback.

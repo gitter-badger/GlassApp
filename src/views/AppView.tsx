@@ -7,10 +7,12 @@ import AutopilotView from "./AutopilotView";
 import ControlView from "./ControlView";
 import DebugView from "./DebugView";
 import EngineView from "./EngineView";
+import GreetingView from "./GreetingView";
 import GroundView from "./GroundView";
 import LightsView from "./LightsView";
 import MapView from "./MapView";
 import OptionsView from "./OptionsView";
+import StatusView from "./StatusView";
 
 export interface AppViewProps {}
 
@@ -20,7 +22,13 @@ const RootDiv = styled.div`
     height: 100%;
 
     display: grid;
-    grid-template-columns: repeat(3, 300px) 1fr;
+
+    grid-template-columns: repeat(3, 1fr) 500px;
+
+    @media only screen and (min-width: 1080px) {
+        grid-template-columns: repeat(3, 300px) auto;
+    }
+
     gap: 8px;
 `;
 
@@ -37,7 +45,9 @@ export default observer((props: AppViewProps) => {
 
     return (
         <RootDiv>
+            {app.showGreeting.get() && <GreetingView app={app} />}
             <RowsDiv>
+                <StatusView sim={sim} />
                 <GroundView sim={sim} />
                 <ControlView sim={sim} />
                 <AutopilotView sim={sim} />

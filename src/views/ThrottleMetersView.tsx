@@ -2,7 +2,7 @@ import { range } from "lodash";
 import { observer } from "mobx-react";
 import * as React from "react";
 import CollapseHeading from "../components/VerticalCollapse";
-import ValueMeter from "../components/Meter";
+import ValueMeter from "../components/base/Meter";
 import { SimModel } from "../models/sim";
 
 interface EngineMeterProps {

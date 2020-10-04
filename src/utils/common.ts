@@ -1,3 +1,5 @@
+export type nil = null | undefined;
+
 export function degToRad(angle: number) {
     return angle * (Math.PI / 180);
 }
@@ -86,7 +88,9 @@ export function slidingWindow<T>(arr: T[], size: number): T[][] {
     return results;
 }
 
-export function interval(fn: () => void, ms: number): () => void {
+export type Disposer = () => void;
+
+export function interval(fn: () => void, ms: number): Disposer {
     const i = setInterval(fn, ms);
     return () => clearInterval(i);
 }

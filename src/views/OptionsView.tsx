@@ -1,10 +1,11 @@
 import { observer } from "mobx-react";
 import * as React from "react";
 import CollapseHeading from "../components/VerticalCollapse";
-import StringInput from "../components/StringInput";
-import ToggleButton from "../components/ToggleButton";
+import TextInput from "../components/base/TextInput";
 import { SimModel } from "../models/sim";
-import Button from "../components/Button";
+import Button from "../components/base/Button";
+import Toggle from "../components/base/Toggle";
+import { manager } from "../models/speech_manager";
 
 export interface DebugViewProps {
     sim: SimModel;
@@ -16,17 +17,19 @@ export default observer((props: DebugViewProps) => {
     const simUrl = sim.serverUrl;
     const grantedNotis = Notification.permission === "granted";
 
+    const voicesEnabled = manager.enabled.get();
+
     return (
         <CollapseHeading defaultCollapsed title="Options">
             <Button disabled={grantedNotis} onClick={() => void Notification.requestPermission()}>
                 {grantedNotis ? "Granted Notifications" : "Notification Access"}
             </Button>
-            <ToggleButton
-                text={sim.connected ? "Disconnect" : "Connect"}
-                active={sim.connected}
-                onClick={() => (sim.connected ? sim.disconnect() : sim.connect())}
-            />
-            <StringInput
+            <Toggle
+                text="Enable Alert Voices"
+                onClick={() => manager.enabled.set(!voicesEnabled)}
+                active={voicesEnabled}
+            ></Toggle>
+            <TextInput
                 label="Glass Server URL"
                 placeholder="ws://localhost:8888/sim"
                 value={simUrl.get()}

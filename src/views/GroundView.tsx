@@ -12,7 +12,8 @@ interface GroundViewProps {
 export default observer((props: GroundViewProps) => {
     const { sim } = props;
 
-    if (!sim.isDataTrue("SIM ON GROUND")) return null;
+    const isOnGround = sim.getData("SIM ON GROUND")?.value === 1;
+    if (!isOnGround) return null;
 
     return (
         <CollapseHeading title="Ground">

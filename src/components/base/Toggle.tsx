@@ -8,7 +8,6 @@ export interface ToggleButtonProps {
     disabled?: boolean;
     onClick?(): void;
     text: React.ReactNode;
-    children?: React.ReactNode | React.ReactNode[];
 }
 
 export default function ToggleButton(props: ToggleButtonProps): JSX.Element {

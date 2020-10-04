@@ -13,8 +13,7 @@ export interface ToggleButtonProps {
 export default function ToggleButton(props: ToggleButtonProps): JSX.Element {
     return (
         <Button disabled={props.disabled} active={props.active} onClick={() => props.onClick?.()}>
-            <FontAwesomeIcon icon={props.active ? faCheckSquare : faSquare} />{" "}
-            {props.text ?? props.children}
+            <FontAwesomeIcon icon={props.active ? faCheckSquare : faSquare} /> {props.text}
         </Button>
     );
 }

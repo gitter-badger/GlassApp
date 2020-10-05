@@ -2,7 +2,8 @@ import { autorun, observable } from "mobx";
 import BlackboxModel from "./blackbox";
 import { MapModel } from "./map";
 import { SimModel } from "./sim";
-import { Stored } from "./stored";
+import { LocallyStored } from "./locally_stored";
+import { LOCAL_STORAGE_DOMAIN } from "../constants";
 
 export class AppModel {
     @observable
@@ -15,11 +16,12 @@ export class AppModel {
     blackbox: BlackboxModel;
 
     @observable
-    showGreeting = new Stored({
+    showGreeting = new LocallyStored({
         initial: true,
         serialize: v => (v ? "true" : "false"),
         deserialize: v => v === "true",
-        key: "showGreeting",
+        name: "showGreeting",
+        domain: LOCAL_STORAGE_DOMAIN,
     });
 
     constructor() {

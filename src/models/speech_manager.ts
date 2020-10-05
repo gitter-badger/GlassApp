@@ -1,7 +1,8 @@
 import { action, autorun, observable } from "mobx";
-import { arrDelete } from "../utils/common";
+import { LOCAL_STORAGE_DOMAIN } from "../constants";
+import { deleteItem } from "../utils/array";
 import { speakUtterance } from "../utils/speech";
-import { Stored } from "./stored";
+import { LocallyStored } from "./locally_stored";
 
 export class SpeechManager {
     @observable
@@ -9,11 +10,12 @@ export class SpeechManager {
     private _speaking: boolean = false;
 
     @observable
-    enabled = new Stored({
+    enabled = new LocallyStored({
         initial: true,
         deserialize: v => v === "true",
         serialize: v => (v ? "true" : "false"),
-        key: "useAlertVoices",
+        name: "useAlertVoices",
+        domain: LOCAL_STORAGE_DOMAIN,
     });
 
     constructor() {
@@ -23,7 +25,7 @@ export class SpeechManager {
     @action
     register(utterance: SpeechSynthesisUtterance): () => void {
         this._utterances.push(utterance);
-        return () => arrDelete(this._utterances, utterance);
+        return () => deleteItem(this._utterances, utterance);
     }
 
     private async keepSpeaking() {

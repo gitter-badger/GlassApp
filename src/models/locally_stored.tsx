@@ -1,23 +1,30 @@
 import { action, observable } from "mobx";
 
-interface StoredConstructorArgs<T> {
-    key: string;
+export interface StoredConstructorArgs<T> {
+    domain: string;
+    name: string;
     initial: T;
 
     serialize(value: T): string;
     deserialize(value: string): T;
 }
 
-export class Stored<T> {
+/**
+ * A value retrieved from and saved into LocalStorage.
+ */
+export class LocallyStored<T> {
     @observable
     private _value: T;
 
-    private _key: string;
+    private _domain: string;
+    private _name: string;
     private _serialize: (value: T) => string;
     private _deserialize: (value: string) => T;
 
     constructor(args: StoredConstructorArgs<T>) {
-        this._key = args.key;
+        this._domain = args.domain;
+        this._name = args.name;
+
         this._serialize = args.serialize.bind(args);
         this._deserialize = args.deserialize.bind(args);
 
@@ -37,11 +44,11 @@ export class Stored<T> {
 
     private saveToStorage(value: T): void {
         const val = this._serialize(value);
-        localStorage.setItem(this._key, val);
+        localStorage.setItem(this.getKey(), val);
     }
 
     private getFromStorage(): T | undefined {
-        const foundItem = localStorage.getItem(this._key);
+        const foundItem = localStorage.getItem(this.getKey());
         if (foundItem == null) return undefined;
         try {
             const result = this._deserialize(foundItem);
@@ -49,5 +56,9 @@ export class Stored<T> {
         } catch {
             return undefined;
         }
+    }
+
+    private getKey(): string {
+        return `${this._domain}:${this._name}`;
     }
 }

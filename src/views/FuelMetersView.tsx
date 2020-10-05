@@ -41,7 +41,7 @@ const FuelTankMeter = observer((props: TankMeterProps) => {
     return (
         <React.Fragment>
             <ValueMeter
-                title={info.name}
+                hoverText={info.name}
                 value={percent}
                 max={100}
                 text={`${quantity.toFixed(2)} GAL`}

@@ -12,7 +12,7 @@ export interface AlertIndicatorProps {
 
 const MyButton = styled.button<{ active?: boolean; dimmed?: boolean }>`
     padding: 8px;
-    border-radius: 8px;
+    border-radius: 16px;
     border: 2px black solid;
 
     ${p => p.active && p.dimmed && "background-color: rgb(127, 0, 0);"}
@@ -54,6 +54,7 @@ export default observer((props: AlertIndicatorProps) => {
             dimmed={dimmed || acknowledged}
             onClick={() => setAcknowledged(true)}
             disabled={!props.active}
+            title={say && `Warning; ${say}`}
         >
             {text}
         </MyButton>

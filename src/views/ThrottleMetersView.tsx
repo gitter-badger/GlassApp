@@ -1,7 +1,7 @@
 import { range } from "lodash";
 import { observer } from "mobx-react";
 import * as React from "react";
-import CollapseHeading from "../components/VerticalCollapse";
+import Collapse from "../components/base/Collapse";
 import ValueMeter from "../components/base/Meter";
 import { SimModel } from "../models/sim";
 
@@ -17,11 +17,29 @@ const EngineThrottleMeter = observer((props: EngineMeterProps) => {
 
     return (
         <ValueMeter
-            title={`Engine ${id}`}
+            hoverText={`Engine ${id}`}
             value={percent}
             max={100}
             text={`${percent.toFixed(2)}%`}
         />
+    );
+});
+
+interface InnerProps {
+    sim: SimModel;
+}
+
+const Inner = observer((props: InnerProps) => {
+    const { sim } = props;
+    const numOfEngines = sim.getData("NUMBER OF ENGINES")?.value ?? 0;
+    const engines = range(1, numOfEngines + 1);
+
+    return (
+        <React.Fragment>
+            {engines.map(engId => (
+                <EngineThrottleMeter key={engId} sim={sim} id={engId} />
+            ))}
+        </React.Fragment>
     );
 });
 
@@ -32,14 +50,5 @@ export interface ThrottleMetersView {
 export default observer((props: ThrottleMetersView) => {
     const { sim } = props;
 
-    const numOfEngines = sim.getData("NUMBER OF ENGINES")?.value ?? 0;
-    const engines = range(1, numOfEngines + 1);
-
-    return (
-        <CollapseHeading title="Throttle">
-            {engines.map(engId => (
-                <EngineThrottleMeter key={engId} sim={sim} id={engId} />
-            ))}
-        </CollapseHeading>
-    );
+    return <Collapse props={{ sim }} header="Throttle" content={Inner} />;
 });

@@ -28,3 +28,9 @@ export function useInterval(
         }
     }, [delayMs]);
 }
+
+export function useLatestRef<T>(value: T) {
+    const ref = React.useRef(value);
+    ref.current = value;
+    return ref;
+}

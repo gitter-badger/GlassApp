@@ -1,94 +1,75 @@
 import * as React from "react";
-import styled from "styled-components";
-import { ACTIVE_COLOR, ACTIVATABLE_COLOR } from "../../theme";
+import { Input, Root, Label, BaseInputProps } from "./input";
 
-export interface StringInputProps {
+/* eslint-disable @typescript-eslint/unbound-method */
+
+export interface TextInputProps extends BaseInputProps {
     value?: string;
-    placeholder?: string;
-    disabled?: boolean;
-    label?: string;
     format?(value: string): string;
-    onSubmit?(value?: string): void;
+    onChange?(value: string): void;
 }
 
-const RootDiv = styled.div<{ active?: boolean }>`
-    background-color: ${p => (p.active ? ACTIVE_COLOR : ACTIVATABLE_COLOR)};
-    border: 2px solid black;
-    border-radius: 4px;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    min-width: 100px;
-`;
-
-const MyInput = styled.input<{ active?: boolean }>`
-    background-color: ${p => (p.active ? "white" : "unset")};
-    border: unset;
-
-    align-self: center;
-    align-self: stretch;
-    font-size: 16px;
-    text-align: center;
-
-    -webkit-outer-spin-button,
-    -webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-    -moz-appearance: textfield;
-`;
-
-const MyLabel = styled.label`
-    align-self: center;
-    margin-bottom: 4px;
-`;
-
-export default function (props: StringInputProps) {
+export default React.memo((props: TextInputProps) => {
     const { value } = props;
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [userInput, setUserInput] = React.useState<string | null>(null);
 
+    const textValue = React.useMemo(() => {
+        if (value == null) return "";
+        if (props.format != null) return props.format(value);
+        return value;
+    }, [value, props.format]);
+
+    const onRootClick = React.useCallback(() => {
+        // Don't refocus
+        if (userInput != null) return;
+
+        inputRef.current?.focus();
+    }, [userInput]);
+
+    const onInputChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setUserInput(e.target.value);
+    }, []);
+
+    const onInputFocus = React.useCallback(() => {
+        // Don't refocus
+        if (userInput != null) return;
+
+        // Reset user input
+        inputRef.current?.select();
+        setUserInput(props.value?.toString() ?? "");
+    }, [props.value, userInput]);
+
+    const onInputKeyPress = React.useCallback(
+        (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key !== "Enter") return;
+            if (userInput == null) return;
+            props.onChange?.(userInput);
+            setUserInput(null);
+        },
+        [userInput, props.onChange]
+    );
+
+    const onInputBlur = React.useCallback(() => {
+        if (userInput == null) return;
+        props.onChange?.(userInput);
+        setUserInput(null);
+    }, [userInput, props.onChange]);
+
     return (
-        <RootDiv onClick={onRootClick} active={userInput != null}>
-            {props.label != null && <MyLabel>{props.label}</MyLabel>}
-            <MyInput
+        <Root onClick={onRootClick} active={userInput != null}>
+            {props.label != null && <Label>{props.label}</Label>}
+            <Input
                 ref={inputRef}
                 active={userInput != null}
-                value={userInput ?? getTextValue()}
-                onFocus={onFocus}
-                onChange={onChange}
-                onBlur={onBlur}
-                onSubmit={onBlur}
+                value={userInput ?? textValue}
+                onFocus={onInputFocus}
+                onChange={onInputChange}
+                onBlur={onInputBlur}
+                onKeyPress={onInputKeyPress}
                 placeholder={props.placeholder}
                 type="text"
             />
-        </RootDiv>
+        </Root>
     );
-
-    function onRootClick() {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-    }
-
-    function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setUserInput(e.target.value);
-    }
-
-    function onFocus() {
-        setUserInput(props.value?.toString() ?? "");
-    }
-
-    function onBlur() {
-        if (userInput == null) return;
-        props.onSubmit?.(userInput);
-        setUserInput(null);
-    }
-
-    function getTextValue() {
-        if (value == null) return "";
-
-        if (props.format != null) return props.format(value);
-
-        return value;
-    }
-}
+});

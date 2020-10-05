@@ -79,7 +79,7 @@ const HeadingDirInput = observer((props: { sim: SimModel }) => {
             disabled={dir == null}
             value={Math.round(dir ?? 0)}
             format={v => `${v}°`}
-            onSubmit={value => value != null && sim.sendEvent("HEADING_BUG_SET", Math.round(value))}
+            onChange={value => value != null && sim.sendEvent("HEADING_BUG_SET", Math.round(value))}
         />
     );
 });
@@ -95,7 +95,7 @@ const AltitudeInput = observer((props: { sim: SimModel }) => {
             disabled={dir == null}
             value={Math.round(dir ?? 0)}
             format={v => `${v} ft.`}
-            onSubmit={value =>
+            onChange={value =>
                 value != null && sim.sendEvent("AP_ALT_VAR_SET_ENGLISH", Math.round(value))
             }
         />
@@ -113,7 +113,7 @@ const AirspeedInput = observer((props: { sim: SimModel }) => {
             disabled={val == null}
             value={Math.round(val ?? 0)}
             format={v => `${v} kts`}
-            onSubmit={value => value != null && sim.sendEvent("AP_SPD_VAR_SET", Math.round(value))}
+            onChange={value => value != null && sim.sendEvent("AP_SPD_VAR_SET", Math.round(value))}
         />
     );
 });
@@ -129,7 +129,7 @@ const VerticalSpeedInput = observer((props: { sim: SimModel }) => {
             disabled={val == null}
             value={Math.round(val ?? 0)}
             format={v => `${v} kts`}
-            onSubmit={value =>
+            onChange={value =>
                 value != null && sim.sendEvent("AP_VS_VAR_SET_ENGLISH", Math.round(value))
             }
         />

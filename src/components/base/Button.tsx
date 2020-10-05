@@ -24,7 +24,7 @@ const ACTIVE_CSS = css`
 export default styled.button<{ active?: boolean; disabled?: boolean }>`
     padding: 8px;
     border: 2px solid black;
-    border-radius: 8px;
+    border-radius: 16px;
     background-color: ${ACTIVATABLE_COLOR};
 
     ${p => p.active && ACTIVE_CSS}

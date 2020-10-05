@@ -17,7 +17,7 @@ const EngineMixtureMeter = observer((props: EngineMeterProps) => {
 
     return (
         <ValueMeter
-            title={`Engine ${id}`}
+            hoverText={`Engine ${id}`}
             value={percent}
             max={100}
             text={`${percent.toFixed(2)}%`}

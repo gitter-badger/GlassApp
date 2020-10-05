@@ -1,6 +1,7 @@
 import { autorun, observable } from "mobx";
+import { LOCAL_STORAGE_DOMAIN } from "../constants";
 import { Disposer, interval } from "../utils/common";
-import { Stored } from "./stored";
+import { LocallyStored } from "./locally_stored";
 
 export class SimModel {
     @observable
@@ -9,13 +10,13 @@ export class SimModel {
     @observable
     connected: boolean = false;
 
-    private retryConnectionDisposer?: Disposer;
     private pollingIntervalDisposer?: Disposer;
 
     @observable
-    serverUrl = new Stored<string>({
+    serverUrl = new LocallyStored<string>({
         initial: "ws://localhost:8888/sim",
-        key: "glass_server_url",
+        domain: LOCAL_STORAGE_DOMAIN,
+        name: "glassServerUrl",
         serialize: v => v,
         deserialize: v => v,
     });
@@ -27,9 +28,9 @@ export class SimModel {
     constructor() {
         this.connect();
 
+        // Retry to connect whenever the socket changes.
         autorun(() => {
             if (this.sock != null) return;
-
             this.connect();
         });
     }
@@ -38,9 +39,9 @@ export class SimModel {
         return this.getCache(name);
     }
 
-    setData(name: string, value: number) {
+    setData(name: string, value: number): void {
         const data = this.simDataCache.get(name);
-        if (data != null) return data;
+        if (data == null) return;
 
         this.sendCommand({
             setData: { [name]: value },
@@ -56,6 +57,7 @@ export class SimModel {
         const sock = new WebSocket(this.serverUrl.get());
         this.sock = sock;
 
+        // If not open in 2 seconds, something might have gone wrong.
         setTimeout(() => {
             if (sock.readyState == sock.OPEN) return;
             sock.close();
@@ -86,7 +88,7 @@ export class SimModel {
         });
     }
 
-    sendEvent(name: string, value?: number) {
+    sendEvent(name: string, value?: number): void {
         this.sendCommand({
             sendEvent: { [name]: value ?? 0 },
         });
@@ -108,12 +110,21 @@ export class SimModel {
     }
 
     private processCommand(cmd: SimServerCommand) {
-        //console.log("Processing: ", cmd);
         if (cmd.updateData != null && cmd.updateData.length > 0) {
             for (const def of cmd.updateData) {
-                this.simDataCache.set(def.name, def);
-
-                this.unknownSimDataNames.delete(def.name);
+                const existingDef = this.simDataCache.get(def.name);
+                if (
+                    existingDef &&
+                    (existingDef.value !== def.value || existingDef.text !== def.text)
+                ) {
+                    // Existing def exists and was changed
+                    existingDef.value = def.value;
+                    existingDef.text = def.text;
+                } else {
+                    // New def
+                    this.simDataCache.set(def.name, def);
+                    this.unknownSimDataNames.delete(def.name);
+                }
             }
         }
     }

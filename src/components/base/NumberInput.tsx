@@ -1,113 +1,82 @@
 import * as React from "react";
-import styled from "styled-components";
-import { ACTIVATABLE_COLOR, ACTIVE_COLOR } from "../../theme";
+import { Root, Input, Label, BaseInputProps } from "./input";
 
-export interface NumberInputProps {
+/* eslint-disable @typescript-eslint/unbound-method */
+
+export interface NumberInputProps extends BaseInputProps {
     value?: number;
-    placeholder?: string;
-    disabled?: boolean;
-    label?: string;
     format?(value: number): string;
-    onSubmit?(value?: number): void;
+    onChange?(value?: number): void;
 }
 
-const RootDiv = styled.div<{ disabled?: boolean; active?: boolean }>`
-    border: 2px solid black;
-    border-radius: 8px;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    min-width: 100px;
-
-    background-color: ${p =>
-        (!p.disabled && !!p.active && ACTIVE_COLOR) ||
-        (!p.disabled && ACTIVATABLE_COLOR) ||
-        "white"};
-`;
-
-const MyInput = styled.input<{ active?: boolean }>`
-    background-color: ${p => (p.active ? "white" : "unset")};
-    border: unset;
-
-    align-self: center;
-    align-self: stretch;
-    font-size: 16px;
-    text-align: center;
-
-    -webkit-outer-spin-button,
-    -webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-    -moz-appearance: textfield;
-`;
-
-const MyLabel = styled.label`
-    align-self: center;
-    margin-bottom: 4px;
-`;
-
-export default function (props: NumberInputProps) {
+export default React.memo((props: NumberInputProps) => {
     const { value } = props;
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [userInput, setUserInput] = React.useState<string | null>(null);
 
-    return (
-        <RootDiv onClick={onRootClick} active={userInput != null} disabled={props.disabled}>
-            {props.label != null && <MyLabel>{props.label}</MyLabel>}
-            <MyInput
-                ref={inputRef}
-                active={userInput != null}
-                value={userInput ?? getTextValue()}
-                onFocus={onFocus}
-                onChange={onChange}
-                onBlur={onBlur}
-                onSubmit={onBlur}
-                onKeyPress={onKeyPress}
-                placeholder={props.placeholder}
-                type={userInput != null ? "number" : "text"}
-            />
-        </RootDiv>
+    const textValue = React.useMemo(() => {
+        if (value == null) return "";
+        if (props.format != null) return props.format(value);
+        return value;
+    }, [props.format, value]);
+
+    const onRootClick = React.useCallback(() => {
+        // Don't refocus
+        if (userInput != null) return;
+
+        inputRef.current?.focus();
+    }, [userInput]);
+
+    const onInputKeyPress = React.useCallback(
+        (e: React.KeyboardEvent) => {
+            if (e.key !== "Enter") return;
+
+            const result = parseFloat(userInput ?? "");
+            if (!Number.isNaN(result)) {
+                props.onChange?.(result);
+            }
+
+            setUserInput(null);
+            inputRef.current?.blur();
+        },
+        [userInput, props.onChange]
     );
 
-    function onKeyPress(e: React.KeyboardEvent) {
-        if (e.key === "Enter") return submit();
-    }
+    const onInputFocus = React.useCallback(() => {
+        if (userInput != null) return;
 
-    function onRootClick() {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-    }
-
-    function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setUserInput(e.target.value);
-    }
-
-    function onFocus() {
         setUserInput(props.value?.toString() ?? "");
-    }
+        inputRef.current?.select();
+    }, [props.value, userInput]);
 
-    function onBlur() {
-        submit();
-    }
+    const onInputChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setUserInput(e.target.value);
+    }, []);
 
-    function getTextValue() {
-        if (value == null) return "";
-
-        if (props.format != null) return props.format(value);
-
-        return value;
-    }
-
-    function submit() {
+    const onInputBlur = React.useCallback(() => {
         if (userInput == null) return;
 
         const result = parseFloat(userInput);
         if (!Number.isNaN(result)) {
-            props.onSubmit?.(result);
+            props.onChange?.(result);
         }
-
         setUserInput(null);
-        inputRef.current?.blur();
-    }
-}
+    }, [userInput, props.onChange]);
+
+    return (
+        <Root onClick={onRootClick} active={userInput != null}>
+            {props.label != null && <Label>{props.label}</Label>}
+            <Input
+                ref={inputRef}
+                active={userInput != null}
+                value={userInput ?? textValue}
+                onFocus={onInputFocus}
+                onChange={onInputChange}
+                onBlur={onInputBlur}
+                onKeyPress={onInputKeyPress}
+                placeholder={props.placeholder}
+                type={userInput != null ? "number" : "text"}
+            />
+        </Root>
+    );
+});

@@ -42,7 +42,7 @@ export default observer((props: ControlViewProps) => {
             />
             <FlapsView sim={sim} />
             <ValueMeter
-                title="Airspeed"
+                hoverText="Airspeed"
                 max={maxAirspeed}
                 value={airspeed}
                 text={`${airspeed.toFixed(1)} kts`}

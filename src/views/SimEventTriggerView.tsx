@@ -1,11 +1,8 @@
+import * as Immutable from "immutable";
 import { observer } from "mobx-react";
 import * as React from "react";
-import BoolSimToggle from "../components/SimVarToggle";
-import SimKeyValue from "../components/SimKeyValue";
-import { SimModel } from "../models/sim";
-import { arrRange, filterNil } from "../utils/common";
-import * as Immutable from "immutable";
 import styled from "styled-components";
+import { SimModel } from "../models/sim";
 
 export interface WatcherViewProps {
     sim: SimModel;

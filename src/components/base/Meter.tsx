@@ -8,8 +8,8 @@ export interface MeterProps {
     min?: number;
     value?: number;
     max?: number;
-    text?: string;
-    title?: string;
+    text?: React.ReactNode;
+    hoverText?: React.ReactNode;
 }
 
 const RootDiv = styled.div`
@@ -20,7 +20,7 @@ const RootDiv = styled.div`
 
     background-color: hsl(0, 0%, 80%);
     border: 1px black solid;
-    border-radius: 8px;
+    border-radius: 16px;
     background-size: 64px 32px;
 
     &:after {
@@ -36,7 +36,7 @@ const RootDiv = styled.div`
 
 const MyMeter = styled.div`
     height: 32px;
-    border-radius: 8px;
+    border-radius: 32px;
     background-color: ${ENABLED_COLOR};
     transition: width 200ms;
 `;
@@ -55,7 +55,7 @@ const MyOverlay = styled.div`
 `;
 
 export default observer((props: MeterProps) => {
-    const { text, value, min, max, title } = props;
+    const { text, value, min, max, hoverText: title } = props;
 
     const [clicking, setClicking] = React.useState(false);
     const [hovering, setHovering] = React.useState(false);

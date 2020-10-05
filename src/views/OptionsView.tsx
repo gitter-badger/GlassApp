@@ -33,7 +33,7 @@ export default observer((props: DebugViewProps) => {
                 label="Glass Server URL"
                 placeholder="ws://localhost:8888/sim"
                 value={simUrl.get()}
-                onSubmit={v => v != null && simUrl.set(v)}
+                onChange={v => v != null && simUrl.set(v)}
             />
         </CollapseHeading>
     );

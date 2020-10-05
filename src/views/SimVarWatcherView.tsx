@@ -1,11 +1,9 @@
-import { observer } from "mobx-react";
+import { observable } from "mobx";
+import { observer, useAsObservableSource } from "mobx-react";
 import * as React from "react";
-import BoolSimToggle from "../components/SimVarToggle";
-import SimKeyValue from "../components/SimKeyValue";
-import { SimModel } from "../models/sim";
-import { arrRange, filterNil } from "../utils/common";
-import * as Immutable from "immutable";
 import styled from "styled-components";
+import { SimModel } from "../models/sim";
+import { filterNil } from "../utils/array";
 
 export interface WatcherViewProps {
     sim: SimModel;
@@ -21,9 +19,9 @@ export default observer((props: WatcherViewProps) => {
     const { sim } = props;
 
     const [input, setInput] = React.useState("");
-    const [watchedVars, setWatchedVars] = React.useState(Immutable.Set<string>());
+    const [watchedVars] = React.useState(observable.set<string>());
 
-    const defs = filterNil(watchedVars.toArray().map(n => sim.getData(n)));
+    const defs = filterNil([...watchedVars].map(n => sim.getData(n)));
 
     return (
         <React.Fragment>
@@ -37,11 +35,13 @@ export default observer((props: WatcherViewProps) => {
             <button onClick={onAddName}>+</button>
             <MyTable>
                 <thead>
-                    <td>Name</td>
-                    <td>Value</td>
-                    <td>Text</td>
-                    <td>Units</td>
-                    <td></td>
+                    <tr>
+                        <td>Name</td>
+                        <td>Value</td>
+                        <td>Text</td>
+                        <td>Units</td>
+                        <td></td>
+                    </tr>
                 </thead>
                 <tbody>
                     {defs.map(def => (
@@ -51,9 +51,7 @@ export default observer((props: WatcherViewProps) => {
                             <td>{def.text}</td>
                             <td>{def.units}</td>
                             <td>
-                                <button onClick={() => setWatchedVars(p => p.remove(def.name))}>
-                                    X
-                                </button>
+                                <button onClick={() => watchedVars.delete(def.name)}>X</button>
                             </td>
                         </tr>
                     ))}
@@ -63,7 +61,7 @@ export default observer((props: WatcherViewProps) => {
     );
 
     function onAddName() {
-        setWatchedVars(p => p.add(input));
+        watchedVars.add(input);
         setInput("");
     }
 });
